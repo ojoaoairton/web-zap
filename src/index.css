@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 200 10% 12%;
+    --foreground: 200 10% 92%;
+
+    --card: 200 8% 15%;
+    --card-foreground: 200 10% 92%;
+
+    --popover: 200 8% 15%;
+    --popover-foreground: 200 10% 92%;
+
+    --primary: 158 84% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 8% 20%;
+    --secondary-foreground: 200 10% 85%;
+
+    --muted: 200 6% 18%;
+    --muted-foreground: 200 8% 55%;
+
+    --accent: 158 84% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 6% 22%;
+    --input: 200 6% 22%;
+    --ring: 158 84% 35%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 200 8% 13%;
+    --sidebar-foreground: 200 10% 85%;
+    --sidebar-primary: 162 100% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 8% 18%;
+    --sidebar-accent-foreground: 200 10% 85%;
+    --sidebar-border: 200 6% 22%;
+    --sidebar-ring: 162 100% 33%;
+
+    /* Custom tokens */
+    --wa-green: 162 100% 33%;
+    --wa-dark-green: 162 100% 28%;
+    --wa-teal: 162 64% 24%;
+    --wa-bubble-out: 162 40% 18%;
+    --wa-bubble-in: 200 8% 20%;
+    --wa-chat-bg: 210 20% 5%;
+    --wa-header: 200 8% 15%;
+    --surface-elevated: 200 8% 17%;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not(.dark) {
+      --background: 0 0% 96%;
+      --foreground: 200 10% 15%;
+      --card: 0 0% 100%;
+      --card-foreground: 200 10% 15%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 200 10% 15%;
+      --primary: 158 84% 35%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 0 0% 93%;
+      --secondary-foreground: 200 10% 25%;
+      --muted: 0 0% 90%;
+      --muted-foreground: 200 6% 45%;
+      --accent: 158 84% 35%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 0 0% 85%;
+      --input: 0 0% 85%;
+      --ring: 158 84% 35%;
+      --sidebar-background: 0 0% 98%;
+      --sidebar-foreground: 200 10% 25%;
+      --sidebar-primary: 162 100% 33%;
+      --sidebar-primary-foreground: 0 0% 100%;
+      --sidebar-accent: 0 0% 93%;
+      --sidebar-accent-foreground: 200 10% 25%;
+      --sidebar-border: 0 0% 85%;
+      --sidebar-ring: 162 100% 33%;
+      --wa-green: 162 100% 33%;
+      --wa-dark-green: 162 100% 28%;
+      --wa-teal: 162 64% 24%;
+      --wa-bubble-out: 120 30% 90%;
+      --wa-bubble-in: 0 0% 100%;
+      --wa-chat-bg: 30 15% 92%;
+      --wa-header: 0 0% 98%;
+      --surface-elevated: 0 0% 100%;
+    }
+  }
+
+  .dark {
+    /* force dark */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+}
+
+/* WhatsApp chat background pattern */
+.chat-bg-pattern {
+  background-color: #0b141a;
+  background-image: url("https://static.whatsapp.net/rsrc.php/v4/y1/r/a3pd-CgpXeU.png");
+  background-size: 412px auto;
+  background-position: center;
+  background-repeat: repeat;
+  position: relative;
+}
+.chat-bg-pattern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(11, 20, 26, 0.92);
+  pointer-events: none;
+  z-index: 0;
+}
+.chat-bg-pattern > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Typing animation */
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+.typing-dot:nth-child(1) { animation: typing-dot 1.4s infinite 0s; }
+.typing-dot:nth-child(2) { animation: typing-dot 1.4s infinite 0.2s; }
+.typing-dot:nth-child(3) { animation: typing-dot 1.4s infinite 0.4s; }
+
+.chat-theme {
+  --bg-overlay: rgba(11,20,26,0.85);
+  --bubble-received: #202c33;
+  --bubble-sent: #005c4b;
+  --text-primary: #e9edef;
+  --text-secondary: rgba(233,237,239,0.7);
+  --header-bg: #202c33;
+  --input-bg: #2a3942;
+  --pix-icon-bg: #173a2f;
+  --color-border: rgba(255,255,255,0.1);
+  --commercial-bg: rgba(11,20,26,0.45);
+  --audio-wave-unplayed: rgba(255,255,255,0.35);
+  --audio-wave-played: rgba(255,255,255,0.85);
+}
+
+@media (prefers-color-scheme: light) {
+  .chat-theme:not([data-theme]) {
+    --bg-overlay: rgba(229,221,213,0.85);
+    --bubble-received: #ffffff;
+    --bubble-sent: #d9fdd3;
+    --text-primary: #111b21;
+    --text-secondary: rgba(17,27,33,0.7);
+    --header-bg: #f0f2f5;
+    --input-bg: #ffffff;
+    --pix-icon-bg: #d7f5ec;
+    --color-border: rgba(0,0,0,0.08);
+    --commercial-bg: rgba(255,255,255,0.75);
+    --audio-wave-unplayed: rgba(0,0,0,0.35);
+    --audio-wave-played: rgba(0,0,0,0.75);
+  }
+}
+
+.chat-theme[data-theme="dark"] {
+  --bg-overlay: rgba(11,20,26,0.85);
+  --bubble-received: #202c33;
+  --bubble-sent: #005c4b;
+  --text-primary: #e9edef;
+  --text-secondary: rgba(233,237,239,0.7);
+  --header-bg: #202c33;
+  --input-bg: #2a3942;
+  --pix-icon-bg: #173a2f;
+  --color-border: rgba(255,255,255,0.1);
+  --commercial-bg: rgba(11,20,26,0.45);
+  --audio-wave-unplayed: rgba(255,255,255,0.35);
+  --audio-wave-played: rgba(255,255,255,0.85);
+}
+
+.chat-theme[data-theme="light"] {
+  --bg-overlay: rgba(229,221,213,0.85);
+  --bubble-received: #ffffff;
+  --bubble-sent: #d9fdd3;
+  --text-primary: #111b21;
+  --text-secondary: rgba(17,27,33,0.7);
+  --header-bg: #f0f2f5;
+  --input-bg: #ffffff;
+  --pix-icon-bg: #d7f5ec;
+  --color-border: rgba(0,0,0,0.08);
+  --commercial-bg: rgba(255,255,255,0.75);
+  --audio-wave-unplayed: rgba(0,0,0,0.35);
+  --audio-wave-played: rgba(0,0,0,0.75);
+}

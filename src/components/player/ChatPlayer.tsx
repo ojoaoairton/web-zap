@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useFlow } from '@/context/FlowContext';
-import { ChatMessage, FlowBlock, ButtonOption } from '@/types/flow';
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
+import { FlowContext } from '@/context/FlowContext';
+import { ChatMessage, Flow, FlowBlock, ButtonOption } from '@/types/flow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, RotateCcw, Bot, Smile, Play } from 'lucide-react';
@@ -17,8 +17,24 @@ import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import ExitModal from './ExitModal';
 
-const ChatPlayer: React.FC = () => {
-  const { flow } = useFlow();
+interface ChatPlayerProps {
+  isPreview?: boolean;
+  flow?: Flow;
+}
+
+const emptyFlow: Flow = {
+  id: '',
+  name: '',
+  theme: 'auto',
+  blocks: [],
+  integrations: [],
+  customScripts: [],
+};
+
+const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) => {
+  const ctx = useContext(FlowContext);
+  const hasFlow = Boolean(flowProp ?? ctx?.flow);
+  const flow = flowProp ?? ctx?.flow ?? emptyFlow;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [inputEnabled, setInputEnabled] = useState(false);
@@ -28,7 +44,7 @@ const ChatPlayer: React.FC = () => {
   const [buttonsBlockId, setButtonsBlockId] = useState<string | null>(null);
   const [buttonsMessageId, setButtonsMessageId] = useState<string | null>(null);
   const [userReplied, setUserReplied] = useState(false);
-  const [chatStarted, setChatStarted] = useState(false);
+  const [chatStarted, setChatStarted] = useState(() => !isPreview);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -400,14 +416,16 @@ const ChatPlayer: React.FC = () => {
     setIsSubmitting(false);
     setUserReplied(false);
     setInputValue('');
-    setChatStarted(false);
-  }, []);
+    setChatStarted(!isPreview);
+  }, [isPreview]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
 
   const dataTheme = flow.theme === 'auto' ? undefined : flow.theme;
+
+  if (!hasFlow) return null;
 
   return (
     <div
@@ -444,12 +462,14 @@ const ChatPlayer: React.FC = () => {
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground hover:text-foreground h-8 px-2.5">
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+        {isPreview === true && (
+          <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground hover:text-foreground h-8 px-2.5">
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
-      {chatStarted ? (
+      {(!isPreview || chatStarted) ? (
         <>
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-1">

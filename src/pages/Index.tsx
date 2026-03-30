@@ -51,7 +51,7 @@ const Index: React.FC = () => {
 
           {/* Player */}
           <div className={`flex-1 overflow-hidden ${activeTab !== 'player' ? 'hidden md:block' : ''}`}>
-            <ChatPlayer />
+            <ChatPlayer isPreview={true} />
           </div>
         </div>
       </div>

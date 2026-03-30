@@ -29,7 +29,16 @@ export const createDefaultFlow = (): Flow => ({
 
 const defaultFlow: Flow = createDefaultFlow();
 
-const FlowContext = createContext<FlowContextType | null>(null);
+export const FlowContext = createContext<FlowContextType | null>(null);
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 export const useFlow = () => {
   const ctx = useContext(FlowContext);
@@ -50,7 +59,7 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(flow));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...flow, slug: slugify(flow.name) }));
     } catch {
       return;
     }

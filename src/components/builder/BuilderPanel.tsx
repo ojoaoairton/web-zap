@@ -9,10 +9,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import {
   Plus, Download, Image, Video, Music, File,
   MessageSquare, LayoutList, Clock, ExternalLink,
-  Settings, FileCode,
+  Settings,
   KeyboardIcon,
   Save,
   FilePlus,
+  Upload,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { generateStandaloneHTML } from '@/lib/standaloneExport';
 
 const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] = [
   { type: 'text', label: 'Texto', icon: <MessageSquare size={16} /> },
@@ -52,11 +52,15 @@ const BuilderPanel: React.FC = () => {
   const { flow, setFlow, addBlock } = useFlow();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [importedFeedback, setImportedFeedback] = useState(false);
   const savedTimerRef = useRef<number | null>(null);
+  const importedTimerRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     return () => {
       if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
+      if (importedTimerRef.current) window.clearTimeout(importedTimerRef.current);
     };
   }, []);
 
@@ -67,17 +71,6 @@ const BuilderPanel: React.FC = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = `${flow.name || 'flow'}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportStandalone = async () => {
-    const html = await generateStandaloneHTML(flow);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${flow.name || 'chat'}.html`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -94,6 +87,54 @@ const BuilderPanel: React.FC = () => {
     if (!ok) return;
     localStorage.removeItem(STORAGE_KEY);
     setFlow(() => createDefaultFlow());
+  };
+
+  const getFlowSlug = () => {
+    const slug = flow.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return slug || 'default';
+  };
+
+  const triggerImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onImportFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || ''));
+        const isValid =
+          parsed &&
+          typeof parsed === 'object' &&
+          typeof parsed.id === 'string' &&
+          typeof parsed.name === 'string' &&
+          Array.isArray(parsed.blocks);
+        if (!isValid) {
+          alert('Arquivo JSON inválido');
+          return;
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        setFlow(() => parsed);
+        setImportedFeedback(true);
+        if (importedTimerRef.current) window.clearTimeout(importedTimerRef.current);
+        importedTimerRef.current = window.setTimeout(() => setImportedFeedback(false), 2000);
+      } catch {
+        alert('Arquivo JSON inválido');
+      }
+    };
+    reader.onerror = () => {
+      alert('Arquivo JSON inválido');
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -124,6 +165,36 @@ const BuilderPanel: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={triggerImport}
+                title="Importar fluxo"
+                className="text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{importedFeedback ? 'Fluxo importado!' : 'Importar'}</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => window.open('/p/' + getFlowSlug(), '_blank')}
+                title="Ver página pública"
+                className="text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Ver página pública</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setSettingsOpen(true)}
                 className="text-muted-foreground hover:text-foreground shrink-0"
               >
@@ -136,16 +207,8 @@ const BuilderPanel: React.FC = () => {
           <Button variant="ghost" size="sm" onClick={exportJSON} className="text-muted-foreground hover:text-foreground shrink-0">
             <Download className="w-4 h-4 mr-1.5" /> JSON
           </Button>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={exportStandalone} className="text-muted-foreground hover:text-foreground shrink-0">
-                <FileCode className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Exportar HTML</TooltipContent>
-          </Tooltip>
         </div>
+        <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={onImportFileChange} />
         <Input
           value={flow.name}
           onChange={e => setFlow(prev => ({ ...prev, name: e.target.value }))}

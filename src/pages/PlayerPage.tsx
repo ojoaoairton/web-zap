@@ -9,6 +9,22 @@ export default function PlayerPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const flowParam = params.get('flow');
+    if (flowParam) {
+      let decoded: unknown = null;
+      try {
+        const normalized = flowParam.replace(/ /g, '+');
+        decoded = JSON.parse(atob(normalized));
+      } catch {
+        decoded = null;
+      }
+      if (decoded && (decoded as { blocks?: unknown }).blocks) {
+        setFlow(decoded as Flow);
+        return;
+      }
+    }
+
     const saved = localStorage.getItem('zaperflux_flow');
     if (saved) {
       try {

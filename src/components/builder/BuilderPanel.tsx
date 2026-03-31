@@ -14,6 +14,8 @@ import {
   Save,
   FilePlus,
   Upload,
+  Check,
+  Link,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -51,16 +53,19 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
 const BuilderPanel: React.FC = () => {
   const { flow, setFlow, addBlock } = useFlow();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [savedFeedback, setSavedFeedback] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [importedFeedback, setImportedFeedback] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const savedTimerRef = useRef<number | null>(null);
   const importedTimerRef = useRef<number | null>(null);
+  const linkCopiedTimerRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     return () => {
       if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
       if (importedTimerRef.current) window.clearTimeout(importedTimerRef.current);
+      if (linkCopiedTimerRef.current) window.clearTimeout(linkCopiedTimerRef.current);
     };
   }, []);
 
@@ -77,9 +82,9 @@ const BuilderPanel: React.FC = () => {
 
   const saveFlow = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(flow));
-    setSavedFeedback(true);
+    setSaved(true);
     if (savedTimerRef.current) window.clearTimeout(savedTimerRef.current);
-    savedTimerRef.current = window.setTimeout(() => setSavedFeedback(false), 2000);
+    savedTimerRef.current = window.setTimeout(() => setSaved(false), 2000);
   };
 
   const newFlow = () => {
@@ -137,6 +142,20 @@ const BuilderPanel: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const copyPublicLink = async () => {
+    try {
+      const json = JSON.stringify(flow);
+      const encoded = btoa(json);
+      const url = window.location.origin + '/p/' + getFlowSlug() + '?flow=' + encodeURIComponent(encoded);
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      if (linkCopiedTimerRef.current) window.clearTimeout(linkCopiedTimerRef.current);
+      linkCopiedTimerRef.current = window.setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      alert('Não foi possível copiar o link');
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-background relative">
       {/* Header */}
@@ -154,10 +173,10 @@ const BuilderPanel: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" onClick={saveFlow} className="text-muted-foreground hover:text-foreground shrink-0">
-                <Save className="w-4 h-4" />
+                {saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{savedFeedback ? 'Salvo!' : 'Salvar'}</TooltipContent>
+            <TooltipContent side="bottom">{saved ? 'Salvo!' : 'Salvar'}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -188,6 +207,21 @@ const BuilderPanel: React.FC = () => {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">Ver página pública</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={copyPublicLink}
+                title="Copiar link público"
+                className="text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <Link className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{linkCopied ? 'Link copiado!' : 'Copiar link público'}</TooltipContent>
           </Tooltip>
 
           <Tooltip>

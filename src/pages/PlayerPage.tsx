@@ -10,21 +10,32 @@ export default function PlayerPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    console.log('PlayerPage montou');
+    console.log('flowId:', flowId);
+
     const params = new URLSearchParams(window.location.search);
     const flowParam = params.get('flow');
+    console.log('flowParam existe:', !!flowParam);
+    console.log('flowParam tamanho:', flowParam?.length);
 
     if (flowParam) {
       try {
         const decompressed = LZString.decompressFromEncodedURIComponent(flowParam);
+        console.log('decompressed:', decompressed?.substring(0, 100));
         const decoded = JSON.parse(decompressed);
+        console.log('decoded.blocks:', decoded?.blocks?.length);
         if (decoded && decoded.blocks) {
-          setFlow(decoded);
+          setFlow(decoded as Flow);
           return;
         }
-      } catch {}
+      } catch (e) {
+        console.error('Erro ao decodificar flow:', e);
+      }
     }
 
     const saved = localStorage.getItem('zaperflux_flow');
+    console.log('localStorage flow existe:', !!saved);
+
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -34,6 +45,7 @@ export default function PlayerPage() {
           typeof parsed.id === 'string' &&
           typeof parsed.name === 'string' &&
           Array.isArray(parsed.blocks);
+
         if (isValid) {
           const flowSlug = parsed.name
             .toLowerCase()
@@ -41,12 +53,15 @@ export default function PlayerPage() {
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
+
           if (flowSlug === flowId || flowId === 'default') {
+            console.log('Flow carregado do localStorage');
             setFlow(parsed);
             return;
           }
         }
-      } catch {
+      } catch (e) {
+        console.error('Erro ao analisar localStorage:', e);
         setError(true);
         return;
       }

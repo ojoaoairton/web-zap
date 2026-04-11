@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import LZString from 'lz-string';
 import { createDefaultFlow, STORAGE_KEY, useFlow } from '@/context/FlowContext';
 import BlockEditor from './BlockEditor';
 import SettingsPanel from './SettingsPanel';
@@ -36,10 +37,10 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
         <g fill="#32BCAD">
-          <path d="M209.6 81.6c25.6-25.6 67.2-25.6 92.8 0l48 48h-36.8c-16 0-31.2 6.4-42.4 17.6l-49.6 49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H116l93.6-48z"/>
-          <path d="M81.6 209.6L48 256l33.6 46.4h47.2c16 0 31.2-6.4 42.4-17.6l49.6-49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H81.6z"/>
-          <path d="M302.4 430.4c-25.6 25.6-67.2 25.6-92.8 0L116 382.4h36.8c16 0 31.2-6.4 42.4-17.6l49.6-49.6 49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H396l-93.6 48z"/>
-          <path d="M430.4 209.6h-47.2c-16 0-31.2 6.4-42.4 17.6L291.2 276.8l49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H430.4L464 256l-33.6-46.4z"/>
+          <path d="M209.6 81.6c25.6-25.6 67.2-25.6 92.8 0l48 48h-36.8c-16 0-31.2 6.4-42.4 17.6l-49.6 49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H116l93.6-48z" />
+          <path d="M81.6 209.6L48 256l33.6 46.4h47.2c16 0 31.2-6.4 42.4-17.6l49.6-49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H81.6z" />
+          <path d="M302.4 430.4c-25.6 25.6-67.2 25.6-92.8 0L116 382.4h36.8c16 0 31.2-6.4 42.4-17.6l49.6-49.6 49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H396l-93.6 48z" />
+          <path d="M430.4 209.6h-47.2c-16 0-31.2 6.4-42.4 17.6L291.2 276.8l49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H430.4L464 256l-33.6-46.4z" />
         </g>
       </svg>
     ),
@@ -142,17 +143,47 @@ const BuilderPanel: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const copyPublicLink = async () => {
+  async function copyToClipboard(text: string) {
     try {
-      const json = JSON.stringify(flow);
-      const encoded = btoa(json);
-      const url = window.location.origin + '/p/' + getFlowSlug() + '?flow=' + encodeURIComponent(encoded);
-      await navigator.clipboard.writeText(url);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {}
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return true;
+    } catch {
+      document.body.removeChild(textarea);
+      return false;
+    }
+  }
+
+  const copyPublicLink = async () => {
+    const json = JSON.stringify(flow);
+    const compressed = LZString.compressToEncodedURIComponent(json);
+    const slug = flow.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const url = window.location.origin + '/p/' + slug + '?flow=' + compressed;
+
+    const success = await copyToClipboard(url);
+    if (success) {
       setLinkCopied(true);
       if (linkCopiedTimerRef.current) window.clearTimeout(linkCopiedTimerRef.current);
       linkCopiedTimerRef.current = window.setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      alert('Não foi possível copiar o link');
+    } else {
+      window.prompt('Copie o link manualmente:', url);
     }
   };
 

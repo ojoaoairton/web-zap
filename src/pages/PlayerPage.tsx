@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import LZString from 'lz-string';
 import ChatPlayer from '@/components/player/ChatPlayer';
 import { Flow } from '@/types/flow';
 
@@ -11,18 +12,16 @@ export default function PlayerPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const flowParam = params.get('flow');
+
     if (flowParam) {
-      let decoded: unknown = null;
       try {
-        const normalized = flowParam.replace(/ /g, '+');
-        decoded = JSON.parse(atob(normalized));
-      } catch {
-        decoded = null;
-      }
-      if (decoded && (decoded as { blocks?: unknown }).blocks) {
-        setFlow(decoded as Flow);
-        return;
-      }
+        const decompressed = LZString.decompressFromEncodedURIComponent(flowParam);
+        const decoded = JSON.parse(decompressed);
+        if (decoded && decoded.blocks) {
+          setFlow(decoded);
+          return;
+        }
+      } catch {}
     }
 
     const saved = localStorage.getItem('zaperflux_flow');

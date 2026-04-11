@@ -429,31 +429,28 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
   return (
     <div
-      className="chat-theme h-full w-full flex flex-col overflow-hidden"
+      className="chat-theme relative h-full w-full overflow-hidden"
       data-theme={dataTheme}
-      style={{
-        height: '100%',
-        width: '100%',
-        color: 'var(--text-primary)',
-        position: 'relative',
-        zIndex: 1,
-        background: 'transparent'
-      }}
+      style={{ color: 'var(--text-primary)', backgroundColor: 'transparent' }}
       onClick={() => unlockAudio()}
     >
+      {/* Background Layer */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
+        backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(https://static.whatsapp.net/rsrc.php/v4/y1/r/a3pd-CgpXeU.png)',
         backgroundRepeat: 'repeat',
         backgroundSize: '400px auto',
-        zIndex: -1,
+        zIndex: 0,
         pointerEvents: 'none'
       }} />
-      {/* Header */}
+
+      {/* Content Layer */}
+      <div className="flex flex-col h-full w-full relative z-10">
+        {/* Header */}
       <div className="sticky top-0 z-[60] bg-[var(--header-bg)] border-b border-border/50 px-4 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {flow.avatarUrl ? (
@@ -577,6 +574,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
       {/* Exit intent modal */}
       <ExitModal />
+      </div>
     </div>
   );
 };

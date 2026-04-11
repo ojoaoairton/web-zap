@@ -161,7 +161,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
             }}
           />
           <div className="overflow-hidden rounded-lg rounded-tl-sm">
-            <div className="px-3 py-1.5 text-[14.5px] leading-[19px]">
+            <div className="px-3 py-2 text-[14.5px] leading-[19px]">
               {msg.content && (
                 <>
                   <p className="whitespace-pre-wrap break-words py-0.5">
@@ -296,7 +296,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div
-        className={`max-w-[80%] px-3 py-1.5 text-[14.5px] leading-[19px] shadow-sm relative ${
+        className={`max-w-[80%] px-3 py-2 text-[14.5px] leading-[19px] shadow-sm relative ${
           isUser
             ? 'bg-[var(--bubble-sent)] text-[var(--text-primary)] rounded-lg rounded-tr-sm'
             : 'bg-[var(--bubble-received)] text-[var(--text-primary)] rounded-lg rounded-tl-sm'

@@ -432,16 +432,27 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       className="chat-theme h-full w-full flex flex-col overflow-hidden"
       data-theme={dataTheme}
       style={{
-        background: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
-        backgroundRepeat: 'repeat',
-        backgroundSize: '400px auto',
-        backgroundAttachment: 'fixed',
         height: '100%',
         width: '100%',
         color: 'var(--text-primary)',
+        position: 'relative',
+        zIndex: 1,
+        background: 'transparent'
       }}
       onClick={() => unlockAudio()}
     >
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
+        backgroundRepeat: 'repeat',
+        backgroundSize: '400px auto',
+        zIndex: -1,
+        pointerEvents: 'none'
+      }} />
       {/* Header */}
       <div className="sticky top-0 z-[60] bg-[var(--header-bg)] border-b border-border/50 px-4 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -472,7 +483,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       {(!isPreview || chatStarted) ? (
         <>
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-1">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-2">
             {/* Business account banner */}
             <div className="flex justify-center mb-2">
               <span

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { FlowProvider } from '@/context/FlowContext';
 import BuilderPanel from '@/components/builder/BuilderPanel';
 import ChatPlayer from '@/components/player/ChatPlayer';
@@ -6,10 +7,11 @@ import { PanelLeft, MessageCircle, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
   const [activeTab, setActiveTab] = useState<'builder' | 'player'>('builder');
 
   return (
-    <FlowProvider>
+    <FlowProvider projectId={projectId}>
       <div className="h-screen flex flex-col bg-background">
         {/* Top bar */}
         <header className="relative z-40 border-b border-border bg-card px-4 py-2.5 flex items-center justify-between shrink-0">

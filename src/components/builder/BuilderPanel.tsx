@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LZString from 'lz-string';
 import { createDefaultFlow, STORAGE_KEY, useFlow } from '@/context/FlowContext';
 import BlockEditor from './BlockEditor';
@@ -17,6 +18,7 @@ import {
   Upload,
   Check,
   Link,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -52,6 +54,7 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
 ];
 
 const BuilderPanel: React.FC = () => {
+  const navigate = useNavigate();
   const { flow, setFlow, addBlock } = useFlow();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -191,7 +194,12 @@ const BuilderPanel: React.FC = () => {
     <div className="h-full flex flex-col bg-background relative">
       {/* Header */}
       <div className="border-b border-border p-4 space-y-3">
-        <div className="flex items-center justify-end gap-1 overflow-x-auto overflow-y-visible whitespace-nowrap relative z-50">
+        <div className="flex items-center justify-between gap-1 overflow-x-auto overflow-y-visible whitespace-nowrap relative z-50">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground shrink-0 gap-1.5 -ml-2 mr-2">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Voltar</span>
+          </Button>
+          <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" onClick={newFlow} className="text-muted-foreground hover:text-foreground shrink-0">
@@ -272,6 +280,7 @@ const BuilderPanel: React.FC = () => {
           <Button variant="ghost" size="sm" onClick={exportJSON} className="text-muted-foreground hover:text-foreground shrink-0">
             <Download className="w-4 h-4 mr-1.5" /> JSON
           </Button>
+          </div>
         </div>
         <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={onImportFileChange} />
         <Input

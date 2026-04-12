@@ -11,6 +11,8 @@ import seloVerificado from '@/assets/selo_verificado.png';
 import { normalizeInput } from '@/lib/textNormalize';
 import { initPixel, trackEvent } from '@/lib/metaPixel';
 import { captureUtmParams } from '@/lib/utm';
+import { trackAnalyticsEvent } from '@/lib/analytics';
+import { trackPresence } from '@/lib/presence';
 import { buildWebhookPayload, sendWebhook } from '@/lib/webhook';
 import { saveSession, loadSession, clearSession, ChatSession } from '@/lib/chatPersistence';
 import MessageBubble from './MessageBubble';
@@ -54,6 +56,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   const flowStarted = useRef(false);
   const currentBlockIdRef = useRef<string | undefined>(undefined);
   const buttonsClickLockedRef = useRef(false);
+  const sessionIdRef = useRef(uuid());
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -318,9 +321,13 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       sendWebhook(flow.webhookUrl, payload);
     }
 
+    if (!currentId && !abortRef.current && flow.blocks.length > 0 && !isPreview) {
+      trackAnalyticsEvent(flow.id, { type: 'reached_cta', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+    }
+
     setIsRunning(false);
     setIsTyping(false);
-  }, [flow, processBlock]);
+  }, [flow, processBlock, isPreview]);
 
   const startChat = useCallback(() => {
     setChatStarted(true);
@@ -332,6 +339,10 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     if (flowStarted.current) return;
     if (flow.blocks.length === 0) return;
     flowStarted.current = true;
+    
+    if (!isPreview) {
+      trackAnalyticsEvent(flow.id, { type: 'view', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+    }
 
     const saved = loadSession(flow.id);
     if (saved && !saved.completed && saved.currentBlockId) {
@@ -344,7 +355,15 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
     const timer = setTimeout(() => runFlow(), 800);
     return () => clearTimeout(timer);
-  }, [chatStarted, runFlow, flow.id, flow.blocks.length, normalizeRestoredMessages]);
+  }, [chatStarted, runFlow, flow.id, flow.blocks.length, normalizeRestoredMessages, isPreview]);
+
+  // Track Realtime Presence
+  useEffect(() => {
+    if (!isPreview && flow.id) {
+      const cleanup = trackPresence(flow.id);
+      return cleanup;
+    }
+  }, [isPreview, flow.id]);
 
   const handleInputSubmit = useCallback(() => {
     if (!inputValue.trim() || !currentInputBlock || isSubmitting) return;
@@ -364,6 +383,9 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     scrollToBottom();
 
     trackEvent('Lead', { variable: currentInputBlock.variable, value: normalized });
+    if (!isPreview) {
+      trackAnalyticsEvent(flow.id, { type: 'input_submit', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+    }
 
     const next = currentInputBlock.next;
     setCurrentInputBlock(null);
@@ -390,6 +412,9 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
     if (btn.trackEvent) {
       trackEvent(btn.trackEvent, { label: btn.label });
+    }
+    if (!isPreview) {
+      trackAnalyticsEvent(flow.id, { type: 'button_click', label: btn.label, timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
     }
 
     if (btn.type !== 'link') {

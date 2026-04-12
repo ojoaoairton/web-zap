@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import LZString from 'lz-string';
 import ChatPlayer from '@/components/player/ChatPlayer';
 import { Flow } from '@/types/flow';
+import { getProjectBySlug } from '@/lib/projectsService';
+import { Loader2 } from 'lucide-react';
 
 export default function PlayerPage() {
   const { flowId } = useParams();
@@ -10,63 +12,62 @@ export default function PlayerPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    console.log('PlayerPage montou');
-    console.log('flowId:', flowId);
-
-    const params = new URLSearchParams(window.location.search);
-    const flowParam = params.get('flow');
-    console.log('flowParam existe:', !!flowParam);
-    console.log('flowParam tamanho:', flowParam?.length);
-
-    if (flowParam) {
-      try {
-        const decompressed = LZString.decompressFromEncodedURIComponent(flowParam);
-        console.log('decompressed:', decompressed?.substring(0, 100));
-        const decoded = JSON.parse(decompressed);
-        console.log('decoded.blocks:', decoded?.blocks?.length);
-        if (decoded && decoded.blocks) {
-          setFlow(decoded as Flow);
-          return;
+    async function loadFlow() {
+      // 1. Tentar Banco de Dados Primeiro via Slug (flowId nesse caso atua como slug)
+      if (flowId) {
+        try {
+          const project = await getProjectBySlug(flowId);
+          if (project && project.flow) {
+            setFlow(project.flow);
+            return;
+          }
+        } catch (e) {
+          console.error('Erro ao buscar do Supabase:', e);
         }
-      } catch (e) {
-        console.error('Erro ao decodificar flow:', e);
       }
-    }
 
-    const saved = localStorage.getItem('zaperflux_flow');
-    console.log('localStorage flow existe:', !!saved);
+      // 2. Tentar compressão da URL
+      const params = new URLSearchParams(window.location.search);
+      const flowParam = params.get('flow');
 
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const isValid =
-          parsed &&
-          typeof parsed === 'object' &&
-          typeof parsed.id === 'string' &&
-          typeof parsed.name === 'string' &&
-          Array.isArray(parsed.blocks);
+      if (flowParam) {
+        try {
+          const decompressed = LZString.decompressFromEncodedURIComponent(flowParam);
+          const decoded = JSON.parse(decompressed);
+          if (decoded && decoded.blocks) {
+            setFlow(decoded as Flow);
+            return;
+          }
+        } catch (e) {
+          console.error('Erro ao decodificar flow compressado:', e);
+        }
+      }
 
-        if (isValid) {
-          const flowSlug = parsed.name
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
+      // 3. Tentar fallback de Local Storage
+      const saved = localStorage.getItem('zaperflux_flow');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const isValid =
+            parsed &&
+            typeof parsed === 'object' &&
+            typeof parsed.id === 'string' &&
+            Array.isArray(parsed.blocks);
 
-          if (flowSlug === flowId || flowId === 'default') {
-            console.log('Flow carregado do localStorage');
+          if (isValid) {
             setFlow(parsed);
             return;
           }
+        } catch (e) {
+          console.error('Erro ao ler flow do storage local:', e);
         }
-      } catch (e) {
-        console.error('Erro ao analisar localStorage:', e);
-        setError(true);
-        return;
       }
+
+      // 4. Falha completa
+      setError(true);
     }
-    setError(true);
+
+    loadFlow();
   }, [flowId]);
 
   if (error) {

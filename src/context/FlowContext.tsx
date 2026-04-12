@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { getProjects, saveProject } from '@/lib/projects';
+import { saveProject as saveProjectCloud } from '@/lib/projectsService';
 import { Flow, FlowBlock } from '@/types/flow';
 import { v4 as uuid } from 'uuid';
 
@@ -46,12 +48,17 @@ export const useFlow = () => {
   return ctx;
 };
 
-export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const FlowProvider: React.FC<{ children: React.ReactNode, projectId?: string }> = ({ children, projectId }) => {
   const [flow, setFlow] = useState<Flow>(() => {
     try {
-      const savedFlow = localStorage.getItem(STORAGE_KEY);
-      if (!savedFlow) return defaultFlow;
-      return JSON.parse(savedFlow) as Flow;
+      if (projectId) {
+        const projects = getProjects();
+        const found = projects.find(p => p.id === projectId);
+        if (found && found.flow) {
+          return found.flow;
+        }
+      }
+      return defaultFlow;
     } catch {
       return defaultFlow;
     }
@@ -59,11 +66,30 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     try {
+      // Legacy backwards compatibility just in case anything else breaks during migration
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...flow, slug: slugify(flow.name) }));
+
+      if (projectId) {
+        saveProject(projectId, { ...flow, slug: slugify(flow.name) });
+        
+        // Nuvem Sync
+        (async () => {
+          try {
+            await saveProjectCloud({
+              id: projectId,
+              name: flow.name,
+              slug: slugify(flow.name),
+              flow: flow
+            });
+          } catch (e) {
+            console.error('Falha ao espelhar salvamento na nuvem', e);
+          }
+        })();
+      }
     } catch {
       return;
     }
-  }, [flow]);
+  }, [flow, projectId]);
 
   const addBlock = useCallback((type: FlowBlock['type']) => {
     const newBlock: FlowBlock = { id: uuid(), type };

@@ -14,12 +14,20 @@ export function trackPresence(projectId: string, isViewer = true) {
         })
       );
     })
-    .subscribe(async (status) => {
+    .subscribe(async (status, err) => {
+      if (err) {
+        console.warn('Realtime connection failed:', err);
+      }
+      
       if (status === 'SUBSCRIBED' && isViewer) {
-        await channel.track({ 
-          projectId,
-          online_at: new Date().toISOString() 
-        });
+        try {
+          await channel.track({ 
+            projectId,
+            online_at: new Date().toISOString() 
+          });
+        } catch (e) {
+          console.warn('Failed to track presence', e);
+        }
       }
     });
 

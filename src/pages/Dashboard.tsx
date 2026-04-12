@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Plus, Copy, Trash2, Edit2, Play, Search, BarChart3, Eye, MousePointerClick, ShoppingCart, Loader2 } from 'lucide-react';
 import { Project } from '@/types/project';

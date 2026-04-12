@@ -170,15 +170,13 @@ const BuilderPanel: React.FC = () => {
   }
 
   const copyPublicLink = async () => {
-    const json = JSON.stringify(flow);
-    const compressed = LZString.compressToEncodedURIComponent(json);
     const slug = flow.name
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
-    const url = window.location.origin + '/p/' + slug + '?flow=' + compressed;
+    const url = window.location.origin + '/p/' + slug;
 
     const success = await copyToClipboard(url);
     if (success) {

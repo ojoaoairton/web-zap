@@ -72,7 +72,7 @@ export async function getProjectBySlug(slug: string) {
     .from('projects')
     .select('*')
     .eq('slug', slug)
-    .single();
+    .maybeSingle();
 
   if (error) {
     if (error.code !== 'PGRST116') {

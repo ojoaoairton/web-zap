@@ -19,6 +19,18 @@ import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import ExitModal from './ExitModal';
 
+declare global {
+  interface Window {
+    onCheckoutClick?: (data: {
+      url: string;
+      label: string;
+      fbp: string | null;
+      fbc: string | null;
+      pageUrl: string;
+    }) => void;
+  }
+}
+
 interface ChatPlayerProps {
   isPreview?: boolean;
   flow?: Flow;
@@ -49,6 +61,9 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   const [chatStarted, setChatStarted] = useState(() => !isPreview);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSavedChat, setHasSavedChat] = useState(false);
+  const savedSessionRef = useRef<ChatSession | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef(false);
@@ -70,7 +85,11 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
   const addMessage = useCallback((msg: Omit<ChatMessage, 'id'>) => {
     const newMsg = { ...msg, id: uuid() };
-    setMessages(prev => [...prev, newMsg]);
+    setMessages(prev => {
+      const next = [...prev, newMsg];
+      messagesRef.current = next;
+      return next;
+    });
     if (msg.type === 'bot' && msg.messageType !== 'recording') playMessageSound();
     return newMsg;
   }, []);
@@ -96,19 +115,36 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     return out;
   }, []);
 
+  // Sync messagesRef when messages change externally (e.g., handleContinue)
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Persist session whenever messages or variables change
   useEffect(() => {
     if (messages.length === 0) return;
+    
+    let nextBlockId: string | undefined;
+    const currentBlock = flow.blocks.find(b => b.id === currentBlockIdRef.current);
+    if (currentBlock) {
+      if (currentBlock.type === 'input' || currentBlock.type === 'buttons' || currentBlock.type === 'pix') {
+        nextBlockId = currentBlock.id;
+      } else {
+        nextBlockId = currentBlock.next;
+      }
+    }
+
     const session: ChatSession = {
       flowId: flow.id,
       currentBlockId: currentBlockIdRef.current,
+      nextBlockId: nextBlockId,
       messages,
       variables: varsRef.current,
       timestamp: Date.now(),
       completed: !isRunning,
     };
     saveSession(session);
-  }, [messages, flow.id, isRunning]);
+  }, [messages, flow.id, isRunning, flow.blocks]);
 
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
   function calcTypingDelay(text: string): number {
@@ -203,15 +239,18 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       case 'input': {
         if (block.content) {
           const content = replaceVars(block.content);
-          const delayMs = block.delayMs && block.delayMs > 0 ? block.delayMs : calcTypingDelay(content);
-          setIsTyping(true);
-          scrollToBottom();
-          await sleep(delayMs);
-          if (abortRef.current) return undefined;
-          setIsTyping(false);
-          addMessage({ type: 'bot', content, messageType: 'text' });
-          scrollToBottom();
-          await sleep(300);
+          const isDuplicate = messagesRef.current.some(m => m.type === 'bot' && m.messageType === 'text' && m.content === content);
+          if (!isDuplicate) {
+            const delayMs = block.delayMs && block.delayMs > 0 ? block.delayMs : calcTypingDelay(content);
+            setIsTyping(true);
+            scrollToBottom();
+            await sleep(delayMs);
+            if (abortRef.current) return undefined;
+            setIsTyping(false);
+            addMessage({ type: 'bot', content, messageType: 'text' });
+            scrollToBottom();
+            await sleep(300);
+          }
         }
         return new Promise((resolve) => {
           setCurrentInputBlock(block);
@@ -230,22 +269,33 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       }
       case 'buttons': {
         const content = replaceVars(block.content || '');
-        const delayMs = block.delayMs && block.delayMs > 0
-          ? block.delayMs
-          : content
-            ? calcTypingDelay(content)
-            : 1500;
-        setIsTyping(true);
-        scrollToBottom();
-        await sleep(delayMs);
-        if (abortRef.current) return undefined;
-        setIsTyping(false);
+        const isDuplicateMsg = content && messagesRef.current.some(m => m.type === 'bot' && m.messageType === 'buttons' && m.content === content);
+        
+        if (!isDuplicateMsg) {
+          const delayMs = block.delayMs && block.delayMs > 0
+            ? block.delayMs
+            : content
+              ? calcTypingDelay(content)
+              : 1500;
+          setIsTyping(true);
+          scrollToBottom();
+          await sleep(delayMs);
+          if (abortRef.current) return undefined;
+          setIsTyping(false);
+        }
+        
         return new Promise((resolve) => {
           buttonsClickLockedRef.current = false;
           setButtonsBlockId(block.id);
-          const buttonsMsg = addMessage({ type: 'bot', content, messageType: 'buttons', buttons: block.buttons });
-          setButtonsMessageId(buttonsMsg.id);
-          scrollToBottom();
+          if (!isDuplicateMsg) {
+            const buttonsMsg = addMessage({ type: 'bot', content, messageType: 'buttons', buttons: block.buttons });
+            setButtonsMessageId(buttonsMsg.id);
+            scrollToBottom();
+          } else {
+            // Se já tem duplicado, só atualiza state das buttons pra reativá-las
+            const existingBtnMsg = [...messagesRef.current].reverse().find(m => m.type === 'bot' && m.messageType === 'buttons' && m.content === content);
+            if (existingBtnMsg) setButtonsMessageId(existingBtnMsg.id);
+          }
 
           const handler: EventListener = (event) => {
             window.removeEventListener('chat-button-click', handler);
@@ -257,19 +307,23 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         });
       }
       case 'pix': {
-        setIsTyping(true);
-        scrollToBottom();
-        await sleep(1500);
-        if (abortRef.current) return undefined;
-        setIsTyping(false);
-        addMessage({
-          type: 'bot',
-          content: '',
-          messageType: 'pix',
-          pixData: block.pixData,
-        });
-        scrollToBottom();
-        await sleep(300);
+        const isDuplicatePix = messagesRef.current.some(m => m.type === 'bot' && m.messageType === 'pix' && m.pixData?.pixKey === block.pixData?.pixKey);
+        
+        if (!isDuplicatePix) {
+          setIsTyping(true);
+          scrollToBottom();
+          await sleep(1500);
+          if (abortRef.current) return undefined;
+          setIsTyping(false);
+          addMessage({
+            type: 'bot',
+            content: '',
+            messageType: 'pix',
+            pixData: block.pixData,
+          });
+          scrollToBottom();
+          await sleep(300);
+        }
         return block.next;
       }
       case 'redirect': {
@@ -323,6 +377,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
     if (!currentId && !abortRef.current && flow.blocks.length > 0 && !isPreview) {
       trackAnalyticsEvent(flow.id, { type: 'reached_cta', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+      clearSession();
     }
 
     setIsRunning(false);
@@ -345,12 +400,10 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     }
 
     const saved = loadSession(flow.id);
-    if (saved && !saved.completed && saved.currentBlockId) {
-      setMessages(normalizeRestoredMessages(saved.messages));
-      varsRef.current = saved.variables;
-      setVariables(saved.variables);
-      const timer = setTimeout(() => runFlow(saved.currentBlockId), 500);
-      return () => clearTimeout(timer);
+    if (saved && !saved.completed && saved.currentBlockId && saved.messages?.length > 0) {
+      savedSessionRef.current = saved;
+      setHasSavedChat(true);
+      return;
     }
 
     const timer = setTimeout(() => runFlow(), 800);
@@ -415,10 +468,20 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         if (value) targetUrl.searchParams.set(param, value);
       });
 
-      if ((window as any).fbq) {
+      if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'InitiateCheckout', {
           content_name: btn.label,
           currency: 'BRL'
+        });
+      }
+
+      if (typeof window !== 'undefined' && typeof window.onCheckoutClick === 'function') {
+        window.onCheckoutClick({
+          url: targetUrl.toString(),
+          label: btn.label,
+          fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1] || null,
+          fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1] || null,
+          pageUrl: window.location.href
         });
       }
 
@@ -441,6 +504,33 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     window.dispatchEvent(new CustomEvent('chat-button-click', { detail: { next } }));
   }, [buttonsBlockId, addMessage, flow.blocks, scrollToBottom]);
 
+  const handleContinue = useCallback(() => {
+    const saved = savedSessionRef.current;
+    if (!saved) return;
+    setMessages(normalizeRestoredMessages(saved.messages));
+    varsRef.current = saved.variables;
+    setVariables(saved.variables);
+    setHasSavedChat(false);
+    savedSessionRef.current = null;
+    
+    // Só retomar se o currentBlockId salvo ainda tem 
+    // próximo bloco a processar — não reprocessar o atual
+    const nextBlockId = saved.nextBlockId; // bloco APÓS o atual
+    if (nextBlockId) {
+      setTimeout(() => runFlow(nextBlockId), 500);
+    }
+  }, [normalizeRestoredMessages, runFlow]);
+
+  const handleRestart = useCallback(() => {
+    clearSession();
+    savedSessionRef.current = null;
+    setHasSavedChat(false);
+    setMessages([]);
+    setVariables({});
+    varsRef.current = {};
+    setTimeout(() => runFlow(), 800);
+  }, [runFlow]);
+
   const reset = useCallback(() => {
     abortRef.current = true;
     flowStarted.current = false;
@@ -457,6 +547,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     setIsSubmitting(false);
     setUserReplied(false);
     setInputValue('');
+    setHasSavedChat(false);
+    savedSessionRef.current = null;
     setChatStarted(!isPreview);
   }, [isPreview]);
 
@@ -608,6 +700,51 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
             <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
               Toque para iniciar
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Saved chat resume pop-up */}
+      {hasSavedChat && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 100
+        }}>
+          <div style={{
+            background: 'var(--bubble-received)',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '300px',
+            textAlign: 'center',
+            display: 'flex', flexDirection: 'column', gap: '12px'
+          }}>
+            <span style={{ fontSize: '32px' }}>👋</span>
+            <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600 }}>
+              Você já esteve aqui antes!
+            </p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+              Deseja continuar de onde parou?
+            </p>
+            <button onClick={handleContinue} style={{
+              background: '#25D366', color: 'white',
+              border: 'none', borderRadius: '50px',
+              padding: '12px 24px', fontSize: '14px',
+              fontWeight: 600, cursor: 'pointer'
+            }}>
+              ▶ Continuar de onde parou
+            </button>
+            <button onClick={handleRestart} style={{
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '50px',
+              padding: '10px 24px', fontSize: '13px',
+              cursor: 'pointer'
+            }}>
+              ↺ Começar do início
+            </button>
           </div>
         </div>
       )}

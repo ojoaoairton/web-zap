@@ -5,6 +5,7 @@ const STORAGE_KEY = 'flowchat_session';
 export interface ChatSession {
   flowId: string;
   currentBlockId?: string;
+  nextBlockId?: string;
   messages: ChatMessage[];
   variables: Record<string, string>;
   timestamp: number;
@@ -13,7 +14,7 @@ export interface ChatSession {
 
 export function saveSession(session: ChatSession): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   } catch {
     // storage full or unavailable
   }
@@ -21,7 +22,7 @@ export function saveSession(session: ChatSession): void {
 
 export function loadSession(flowId: string): ChatSession | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const session: ChatSession = JSON.parse(raw);
     // Only restore if same flow and not older than 24h
@@ -38,7 +39,7 @@ export function loadSession(flowId: string): ChatSession | null {
 
 export function clearSession(): void {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
   } catch {
     // ignore
   }

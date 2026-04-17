@@ -34,7 +34,7 @@ function parseWhatsAppMarkdown(text: string): React.ReactNode {
   });
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onButtonClick, userReplied }) => {
+const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied }, ref) => {
   const isUser = msg.type === 'user';
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
@@ -142,6 +142,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
   if (msg.messageType === 'buttons' && msg.buttons) {
     return (
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: 8, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -207,6 +208,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
   if (msg.messageType === 'recording') {
     return (
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: 8, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -237,6 +239,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
   if (msg.messageType === 'pix' && msg.pixData) {
     return (
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: 8, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -290,6 +293,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 8, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -482,7 +486,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ msg, buttonsActive, onBut
       </div>
     </motion.div>
   );
-};
+});
 MessageBubble.displayName = 'MessageBubble';
 
 export default React.memo(MessageBubble, (prev, next) => {

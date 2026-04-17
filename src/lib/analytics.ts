@@ -18,16 +18,35 @@ export interface ProjectAnalytics {
 export async function trackAnalyticsEvent(projectId: string, event: AnalyticsEvent) {
   if (!projectId) return;
 
+  const sessionId = sessionStorage.getItem('zf_session') || crypto.randomUUID();
+  sessionStorage.setItem('zf_session', sessionId);
+
   try {
-    await supabase.from('analytics_events').insert({
+    const payload = {
       project_id: projectId,
       type: event.type,
       label: event.label,
-      session_id: event.sessionId,
+      session_id: sessionId,
       created_at: event.timestamp || new Date().toISOString()
-    });
+    };
+
+    if (event.type === 'view') {
+      const existing = await supabase
+        .from('analytics_events')
+        .select('id')
+        .eq('session_id', sessionId)
+        .eq('type', 'view')
+        .eq('project_id', projectId)
+        .maybeSingle();
+
+      if (!existing.data) {
+        await supabase.from('analytics_events').insert(payload);
+      }
+    } else {
+      await supabase.from('analytics_events').upsert(payload, { onConflict: 'id' });
+    }
   } catch (error) {
-    console.error('Falha ao enviar analytics para nuvem:', error);
+    console.warn('Analytics error:', error);
   }
 }
 

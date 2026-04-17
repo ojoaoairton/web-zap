@@ -407,7 +407,23 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     scrollToBottom();
 
     if (btn.type === 'link' && btn.url) {
-      window.open(btn.url, btn.target || '_blank');
+      const currentParams = new URLSearchParams(window.location.search);
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'sck', 'src'];
+      const targetUrl = new URL(btn.url);
+      utmParams.forEach(param => {
+        const value = currentParams.get(param);
+        if (value) targetUrl.searchParams.set(param, value);
+      });
+
+      if ((window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          content_name: btn.label,
+          currency: 'BRL'
+        });
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+      window.open(targetUrl.toString(), btn.target || '_blank');
     }
 
     if (btn.trackEvent) {
@@ -453,20 +469,29 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   if (!hasFlow) return null;
 
   return (
-    <div
-      className="chat-theme h-full w-full flex flex-col overflow-hidden"
-      data-theme={dataTheme}
-      style={{
-        background: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
+    <>
+      <div style={{
+        position: 'fixed',
+        top: 0, left: 0,
+        width: '100%', height: '100%',
+        backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
         backgroundRepeat: 'repeat',
         backgroundSize: '400px auto',
-        height: '100%',
-        width: '100%',
-        color: 'var(--text-primary)',
-      }}
-      onClick={() => unlockAudio()}
-    >
-      {/* Header */}
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
+      <div
+        className="chat-theme h-full w-full flex flex-col overflow-hidden"
+        data-theme={dataTheme}
+        style={{
+          position: 'relative', zIndex: 1, background: 'transparent',
+          height: '100%',
+          width: '100%',
+          color: 'var(--text-primary)',
+        }}
+        onClick={() => unlockAudio()}
+      >
+        {/* Header */}
       <div className="sticky top-0 z-[60] bg-[var(--header-bg)] border-b border-border/50 px-4 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {flow.avatarUrl ? (
@@ -591,6 +616,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       {/* Exit intent modal */}
       <ExitModal />
     </div>
+    </>
   );
 };
 

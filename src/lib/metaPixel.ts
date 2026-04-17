@@ -33,7 +33,6 @@ export function initPixel(pixelId: string) {
   document.head.appendChild(script);
 
   fbq('init', pixelId);
-  fbq('track', 'PageView');
 }
 
 export function trackEvent(eventName: string, data?: Record<string, any>) {

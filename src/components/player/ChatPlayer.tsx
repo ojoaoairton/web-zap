@@ -359,7 +359,6 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     if (metaIntegration?.value) initPixel(metaIntegration.value);
     else if (flow.pixelId) initPixel(flow.pixelId);
     captureUtmParams();
-    trackEvent('ViewContent', { flowName: flow.name });
 
     let currentId: string | undefined = startFromBlockId || flow.blocks[0].id;
 
@@ -467,13 +466,6 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         const value = currentParams.get(param);
         if (value) targetUrl.searchParams.set(param, value);
       });
-
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'InitiateCheckout', {
-          content_name: btn.label,
-          currency: 'BRL'
-        });
-      }
 
       if (typeof window !== 'undefined' && typeof window.onCheckoutClick === 'function') {
         window.onCheckoutClick({

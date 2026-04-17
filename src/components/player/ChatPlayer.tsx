@@ -469,9 +469,9 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   if (!hasFlow) return null;
 
   return (
-    <>
+    <div className="chat-theme h-full w-full relative" data-theme={dataTheme}>
       <div style={{
-        position: 'fixed',
+        position: 'absolute',
         top: 0, left: 0,
         width: '100%', height: '100%',
         backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
@@ -481,8 +481,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         pointerEvents: 'none'
       }} />
       <div
-        className="chat-theme h-full w-full flex flex-col overflow-hidden"
-        data-theme={dataTheme}
+        className="h-full w-full flex flex-col overflow-hidden"
         style={{
           position: 'relative', zIndex: 1, background: 'transparent',
           height: '100%',
@@ -616,7 +615,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       {/* Exit intent modal */}
       <ExitModal />
     </div>
-    </>
+    </div>
   );
 };
 

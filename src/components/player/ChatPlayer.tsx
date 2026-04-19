@@ -553,11 +553,11 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   if (!hasFlow) return null;
 
   return (
-    <div className="chat-theme h-full w-full relative overflow-hidden" data-theme={dataTheme}>
+    <div className="chat-theme h-full w-full relative" data-theme={dataTheme}>
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,

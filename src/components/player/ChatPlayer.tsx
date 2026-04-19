@@ -550,33 +550,34 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
   const dataTheme = flow.theme === 'auto' ? undefined : flow.theme;
 
+  useEffect(() => {
+    const bgOverlay = dataTheme === 'light' 
+      ? 'rgba(229,221,213,0.85)' 
+      : 'rgba(11,20,26,0.85)';
+      
+    const originalBg = document.body.style.backgroundImage;
+    const originalBgColor = document.body.style.backgroundColor;
+    
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.height = '100%';
+    document.body.style.backgroundImage = 
+      `linear-gradient(${bgOverlay}, ${bgOverlay}), url('/pattern.png')`;
+    document.body.style.backgroundRepeat = 'repeat';
+    document.body.style.backgroundSize = '400px auto';
+    document.body.style.backgroundAttachment = 'scroll';
+    document.body.style.backgroundPosition = 'top left';
+    
+    return () => {
+      document.body.style.backgroundImage = originalBg;
+      document.body.style.backgroundColor = originalBgColor;
+    };
+  }, [dataTheme]);
+
   if (!hasFlow) return null;
 
   return (
     <div className="chat-theme h-full w-full relative" data-theme={dataTheme}>
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: `linear-gradient(
-            var(--bg-overlay, rgba(11,20,26,0.85)), 
-            var(--bg-overlay, rgba(11,20,26,0.85))
-          ), url('/pattern.png')`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '400px auto',
-          backgroundPosition: 'top left',
-          zIndex: 0,
-          pointerEvents: 'none',
-          WebkitTransform: 'translateZ(0)',
-          transform: 'translateZ(0)',
-        }}
-      />
       <div
         className="h-full w-full flex flex-col overflow-hidden"
         style={{

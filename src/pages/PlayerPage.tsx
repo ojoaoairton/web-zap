@@ -4,23 +4,49 @@ import LZString from 'lz-string';
 import ChatPlayer from '@/components/player/ChatPlayer';
 import { Flow } from '@/types/flow';
 import { getProjectBySlug } from '@/lib/projectsService';
-import { Loader2 } from 'lucide-react';
+import { PATTERN_BASE64 } from '@/assets/pattern';
+
+interface HeaderCache {
+  contactName: string;
+  avatarUrl: string;
+  theme: string;
+}
 
 export default function PlayerPage() {
   const { flowId } = useParams();
   const [flow, setFlow] = useState<Flow | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [headerData, setHeaderData] = useState<HeaderCache | null>(null);
+  const [isLoadingFlow, setIsLoadingFlow] = useState(true);
   const [error, setError] = useState(false);
 
+  const HEADER_CACHE_KEY = 'zf_header_' + flowId;
+
   useEffect(() => {
+    // Tentar carregar dados básicos do cache local primeiro
+    try {
+      const cached = localStorage.getItem(HEADER_CACHE_KEY);
+      if (cached) {
+        setHeaderData(JSON.parse(cached));
+      }
+    } catch (e) {
+      // Cache corrompido, ignorar
+    }
+
     async function loadFlow() {
+      setIsLoadingFlow(true);
       try {
-        // 1. Tentar Banco de Dados Primeiro via Slug (flowId nesse caso atua como slug)
+        // 1. Tentar Banco de Dados Primeiro via Slug
         if (flowId) {
           try {
             const project = await getProjectBySlug(flowId);
             if (project && project.flow) {
               setFlow(project.flow);
+              // Salvar header no cache para próxima visita
+              localStorage.setItem(HEADER_CACHE_KEY, JSON.stringify({
+                contactName: project.flow.contactName || project.flow.name,
+                avatarUrl: project.flow.avatarUrl || '',
+                theme: project.flow.theme || 'dark',
+              }));
               return;
             }
           } catch (e) {
@@ -71,7 +97,7 @@ export default function PlayerPage() {
         console.error('Erro ao carregar fluxo:', e);
         setError(true);
       } finally {
-        setLoading(false);
+        setIsLoadingFlow(false);
       }
     }
 
@@ -174,18 +200,188 @@ export default function PlayerPage() {
     
   }, [flow]);
 
-  if (loading) {
+  // Estado A: Sem cache e sem fluxo → tela mínima com spinner
+  if (!headerData && !flow && isLoadingFlow) {
+    return (
+      <div style={{
+        height: '100vh',
+        background: 'rgba(11,20,26,1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(255,255,255,0.1)',
+          borderTop: '3px solid #25D366',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Estado B: Tem cache mas fluxo ainda carregando → header + digitando
+  if (headerData && isLoadingFlow && !flow) {
+    const dataTheme = headerData.theme !== 'auto' ? headerData.theme : undefined;
     return (
       <div
-        style={{
+        className="chat-theme h-full w-full flex flex-col"
+        data-theme={dataTheme}
+        style={{ height: '100vh' }}
+      >
+        {/* Background pattern */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundImage: `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url("${PATTERN_BASE64}")`,
+            backgroundRepeat: 'repeat',
+            backgroundSize: '400px auto',
+            backgroundPosition: 'top left',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Header imediato */}
+        <div style={{
+          position: 'relative',
+          zIndex: 1,
+          background: 'var(--header-bg, #1f2c34)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          padding: '10px 16px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          background: '#0b141a',
-        }}
-      >
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'hsl(var(--primary))' }} />
+          gap: '12px',
+          shrink: 0,
+        }}>
+          {headerData.avatarUrl ? (
+            <img
+              src={headerData.avatarUrl}
+              alt="avatar"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                ring: '2px solid rgba(0,168,132,0.1)',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(0,168,132,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+            }}>
+              🤖
+            </div>
+          )}
+          <div>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'var(--text-primary, #e9edef)',
+            }}>
+              {headerData.contactName || 'Carregando...'}
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: '#25D366',
+            }}>
+              digitando...
+            </div>
+          </div>
+        </div>
+
+        {/* Área de mensagens com typing indicator */}
+        <div style={{
+          position: 'relative',
+          zIndex: 1,
+          flex: 1,
+          padding: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}>
+          {/* Typing indicator */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            background: 'var(--bubble-received, #1f2c34)',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            width: 'fit-content',
+            position: 'relative',
+          }}>
+            {/* Biquinho */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '-8px',
+              width: 0,
+              height: 0,
+              borderTop: '8px solid var(--bubble-received, #1f2c34)',
+              borderLeft: '8px solid transparent',
+            }} />
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.4)',
+                animation: 'typingDot 1.4s infinite',
+                animationDelay: `${i * 0.2}s`,
+              }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Barra de input desabilitada */}
+        <div style={{
+          position: 'relative',
+          zIndex: 1,
+          background: 'var(--header-bg, #1f2c34)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: '8px 12px',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center',
+        }}>
+          <div style={{
+            flex: 1,
+            background: 'var(--input-bg, #2a3942)',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            color: 'rgba(255,255,255,0.3)',
+            fontSize: '14px',
+          }}>
+            Aguardando...
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes typingDot {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -211,6 +407,7 @@ export default function PlayerPage() {
 
   if (!flow) return null;
 
+  // Estado C: fluxo carregado → renderizar ChatPlayer normalmente
   return (
     <div style={{ height: '100vh', width: '100%' }}>
       <ChatPlayer flow={flow} isPreview={false} />

@@ -550,44 +550,21 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
   const dataTheme = flow.theme === 'auto' ? undefined : flow.theme;
 
-  useEffect(() => {
-    const bgOverlay = dataTheme === 'light' 
-      ? 'rgba(229,221,213,0.85)' 
-      : 'rgba(11,20,26,0.85)';
-      
-    const originalBg = document.body.style.backgroundImage;
-    const originalBgColor = document.body.style.backgroundColor;
-    
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.height = '100%';
-    document.body.style.backgroundImage = 
-      `linear-gradient(${bgOverlay}, ${bgOverlay}), url('/pattern.png')`;
-    document.body.style.backgroundRepeat = 'repeat';
-    document.body.style.backgroundSize = '400px auto';
-    document.body.style.backgroundAttachment = 'scroll';
-    document.body.style.backgroundPosition = 'top left';
-    
-    return () => {
-      document.body.style.backgroundImage = originalBg;
-      document.body.style.backgroundColor = originalBgColor;
-    };
-  }, [dataTheme]);
-
   if (!hasFlow) return null;
 
   return (
-    <div className="chat-theme h-full w-full relative" data-theme={dataTheme}>
-      <div
-        className="h-full w-full flex flex-col overflow-hidden"
-        style={{
-          position: 'relative', zIndex: 1, background: 'transparent',
-          height: '100%',
-          width: '100%',
-          color: 'var(--text-primary)',
-        }}
-        onClick={() => unlockAudio()}
-      >
+    <div
+      className="chat-theme h-full w-full flex flex-col overflow-hidden"
+      data-theme={dataTheme}
+      style={{
+        backgroundImage: `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url('/pattern.png')`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '400px auto',
+        backgroundPosition: 'top left',
+        color: 'var(--text-primary)',
+      }}
+      onClick={() => unlockAudio()}
+    >
         {/* Header */}
       <div className="sticky top-0 z-[60] bg-[var(--header-bg)] border-b border-border/50 px-4 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -757,7 +734,6 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
       {/* Exit intent modal */}
       <ExitModal />
-    </div>
     </div>
   );
 };

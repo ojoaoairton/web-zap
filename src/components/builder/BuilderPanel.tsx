@@ -189,7 +189,7 @@ const BuilderPanel: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background relative" style={{ backgroundColor: 'var(--color-background-secondary, #1a1a24)' }}>
+    <div className="h-full flex flex-col bg-background relative">
       {/* Header */}
       <div className="border-b border-border p-4 space-y-3">
         <div className="flex items-center justify-between gap-1 overflow-x-auto overflow-y-visible whitespace-nowrap relative z-50">

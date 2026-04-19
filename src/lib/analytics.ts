@@ -15,35 +15,72 @@ export interface ProjectAnalytics {
   totalConversions: number;
 }
 
-export async function trackAnalyticsEvent(projectId: string, event: AnalyticsEvent) {
-  if (!projectId) return;
-
-  const sessionId = sessionStorage.getItem('zf_session') || crypto.randomUUID();
-  sessionStorage.setItem('zf_session', sessionId);
-
+export async function trackAnalyticsEvent(projectId: string, flowName: string, event: AnalyticsEvent) {
   try {
-    const payload = {
-      project_id: projectId,
-      type: event.type,
-      label: event.label,
-      session_id: sessionId,
-      created_at: event.timestamp || new Date().toISOString()
-    };
+    if (!projectId) {
+      console.warn('Analytics: Missing projectId');
+      return;
+    }
 
-    if (event.type === 'view') {
-      const existing = await supabase
+    const slug = flowName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const { data: project } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    const realProjectId = project?.id || projectId;
+
+    if (!event.type) {
+      console.warn('Analytics: Missing event type');
+      return;
+    }
+
+    const sessionId = sessionStorage.getItem('zf_session_id') || crypto.randomUUID();
+    sessionStorage.setItem('zf_session_id', sessionId);
+
+    // Para evitar os logs vermelhos de 409 Conflict no console do navegador,
+    // sempre verificamos se o evento já existe antes de tentar a inserção.
+    let query = supabase
+      .from('analytics_events')
+      .select('id')
+      .eq('session_id', sessionId)
+      .eq('type', event.type)
+      .eq('project_id', realProjectId);
+
+    // Se o evento tem um label específico, filtramos por ele também
+    if (event.label !== undefined && event.label !== null) {
+      query = query.eq('label', event.label);
+    }
+
+    const { data: existing } = await query.limit(1);
+
+    // Só insere se não houver NENHUM evento idêntico já salvo nesta sessão
+    if (!existing || existing.length === 0) {
+      const payload = {
+        project_id: realProjectId,
+        type: event.type,
+        label: event.label || null,
+        session_id: sessionId,
+      };
+
+      console.log('Analytics insert payload:', payload);
+
+      const { data, error, status, statusText } = await supabase
         .from('analytics_events')
-        .select('id')
-        .eq('session_id', sessionId)
-        .eq('type', 'view')
-        .eq('project_id', projectId)
-        .maybeSingle();
+        .insert(payload);
 
-      if (!existing.data) {
-        await supabase.from('analytics_events').insert(payload);
+      console.log('Analytics response:', { data, error, status, statusText });
+
+      if (error) {
+        console.error('Analytics error details:', JSON.stringify(error, null, 2));
       }
-    } else {
-      await supabase.from('analytics_events').upsert(payload, { onConflict: 'id' });
     }
   } catch (error) {
     console.warn('Analytics error:', error);

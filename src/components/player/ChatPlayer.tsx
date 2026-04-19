@@ -376,7 +376,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     }
 
     if (!currentId && !abortRef.current && flow.blocks.length > 0 && !isPreview) {
-      trackAnalyticsEvent(flow.id, { type: 'reached_cta', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+      trackAnalyticsEvent(flow.id, flow.name, { type: 'reached_cta', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
       clearSession();
     }
 
@@ -396,7 +396,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     flowStarted.current = true;
     
     if (!isPreview) {
-      trackAnalyticsEvent(flow.id, { type: 'view', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+      trackAnalyticsEvent(flow.id, flow.name, { type: 'view', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
     }
 
     const saved = loadSession(flow.id);
@@ -437,7 +437,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
     trackEvent('Lead', { variable: currentInputBlock.variable, value: normalized });
     if (!isPreview) {
-      trackAnalyticsEvent(flow.id, { type: 'input_submit', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+      trackAnalyticsEvent(flow.id, flow.name, { type: 'input_submit', timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
     }
 
     const next = currentInputBlock.next;
@@ -486,7 +486,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       trackEvent(btn.trackEvent, { label: btn.label });
     }
     if (!isPreview) {
-      trackAnalyticsEvent(flow.id, { type: 'button_click', label: btn.label, timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
+      trackAnalyticsEvent(flow.id, flow.name, { type: 'button_click', label: btn.label, timestamp: new Date().toISOString(), sessionId: sessionIdRef.current });
     }
 
     if (btn.type !== 'link') {

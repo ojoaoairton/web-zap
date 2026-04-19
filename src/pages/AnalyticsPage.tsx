@@ -6,6 +6,7 @@ import { getAnalytics, ProjectAnalytics } from '@/lib/analytics';
 import { getProjects } from '@/lib/projectsService';
 import { trackPresence } from '@/lib/presence';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
+import { supabase } from '@/lib/supabase';
 
 const AnalyticsPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -20,13 +21,48 @@ const AnalyticsPage: React.FC = () => {
       if (projectId) {
         try {
           setIsLoading(true);
-          const [analyticsData, projectsData] = await Promise.all([
-            getAnalytics(projectId),
-            getProjects()
-          ]);
-          setData(analyticsData);
+          
+          // 1. Busca os dados dos projetos (seja do Storage ou da API)
+          const projectsData = await getProjects();
           const prj = projectsData?.find(p => p.id === projectId);
-          if (prj) setProjectName(prj.name);
+          let realProjectId = projectId;
+          
+          if (prj) {
+            setProjectName(prj.name);
+            const slug = prj.name
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '');
+              
+            const { data: project } = await supabase
+              .from('projects')
+              .select('id')
+              .eq('slug', slug)
+              .maybeSingle();
+              
+            realProjectId = project?.id || projectId;
+          }
+
+          const { data: projectTest } = await supabase
+            .from('projects')
+            .select('id')
+            .eq('id', projectId)
+            .maybeSingle();
+
+          if (!projectTest) {
+            const { data: projectBySlug } = await supabase
+              .from('projects')
+              .select('id, slug')
+              .limit(10);
+            console.log('Projetos disponíveis (debug):', projectBySlug);
+          }
+
+          console.log('Buscando analytics para project_id:', realProjectId);
+
+          const analyticsData = await getAnalytics(realProjectId);
+          setData(analyticsData);
         } catch (e) {
           console.error('Erro ao buscar analytics na nuvem:', e);
         } finally {

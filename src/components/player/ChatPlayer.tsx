@@ -8,6 +8,7 @@ import { unlockAudio, playMessageSound } from '@/lib/messageSound';
 import { v4 as uuid } from 'uuid';
 import { AnimatePresence } from 'framer-motion';
 import seloVerificado from '@/assets/selo_verificado.png';
+import { PATTERN_BASE64 } from '@/assets/pattern';
 import { normalizeInput } from '@/lib/textNormalize';
 import { initPixel, trackEvent } from '@/lib/metaPixel';
 import { captureUtmParams } from '@/lib/utm';
@@ -557,7 +558,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       className="chat-theme h-full w-full flex flex-col overflow-hidden"
       data-theme={dataTheme}
       style={{
-        backgroundImage: `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url('/pattern.png')`,
+        backgroundImage: `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url("${PATTERN_BASE64}")`,
         backgroundRepeat: 'repeat',
         backgroundSize: '400px auto',
         backgroundPosition: 'top left',

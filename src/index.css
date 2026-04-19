@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -136,27 +136,7 @@
   }
 }
 
-/* WhatsApp chat background pattern */
-.chat-bg-pattern {
-  background-color: #0b141a;
-  background-image: url("https://static.whatsapp.net/rsrc.php/v4/y1/r/a3pd-CgpXeU.png");
-  background-size: 412px auto;
-  background-position: center;
-  background-repeat: repeat;
-  position: relative;
-}
-.chat-bg-pattern::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: rgba(11, 20, 26, 0.92);
-  pointer-events: none;
-  z-index: 0;
-}
-.chat-bg-pattern > * {
-  position: relative;
-  z-index: 1;
-}
+
 
 /* Typing animation */
 @keyframes typing-dot {

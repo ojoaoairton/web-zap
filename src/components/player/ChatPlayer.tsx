@@ -553,17 +553,30 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   if (!hasFlow) return null;
 
   return (
-    <div className="chat-theme h-full w-full relative" data-theme={dataTheme}>
-      <div style={{
-        position: 'absolute',
-        top: 0, left: 0,
-        width: '100%', height: '100%',
-        backgroundImage: 'linear-gradient(var(--bg-overlay), var(--bg-overlay)), url(/pattern.png)',
-        backgroundRepeat: 'repeat',
-        backgroundSize: '400px auto',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
+    <div className="chat-theme h-full w-full relative overflow-hidden" data-theme={dataTheme}>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `linear-gradient(
+            var(--bg-overlay, rgba(11,20,26,0.85)), 
+            var(--bg-overlay, rgba(11,20,26,0.85))
+          ), url('/pattern.png')`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '400px auto',
+          backgroundPosition: 'top left',
+          zIndex: 0,
+          pointerEvents: 'none',
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
+        }}
+      />
       <div
         className="h-full w-full flex flex-col overflow-hidden"
         style={{

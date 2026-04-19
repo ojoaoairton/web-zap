@@ -47,7 +47,7 @@ const Index: React.FC = () => {
         {/* Main content */}
         <div className="flex-1 flex overflow-hidden relative z-0">
           {/* Builder - desktop always visible, mobile toggled */}
-          <div className={`w-full md:w-[420px] lg:w-[480px] border-r border-border shrink-0 overflow-hidden ${activeTab !== 'builder' ? 'hidden md:block' : ''}`}>
+          <div className={`w-full md:w-[420px] lg:w-[480px] border-r border-border shrink-0 overflow-hidden bg-background relative z-10 ${activeTab !== 'builder' ? 'hidden md:block' : ''}`}>
             <BuilderPanel />
           </div>
 

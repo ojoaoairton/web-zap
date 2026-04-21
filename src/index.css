@@ -216,3 +216,22 @@
   --audio-wave-unplayed: rgba(0,0,0,0.35);
   --audio-wave-played: rgba(0,0,0,0.75);
 }
+
+.chat-theme[data-theme="instagram"] {
+  --bg-overlay: #0c1013;
+  --bubble-received: #262626;
+  --bubble-sent: #A855F7;
+  --text-primary: #ffffff;
+  --text-secondary: #737373;
+  --header-bg: #000000;
+  --input-bg: #000000;
+  --input-border: #363636;
+  --pix-icon-bg: #1a1a2e;
+  --color-border: #363636;
+  --commercial-bg: rgba(255,255,255,0.06);
+  --audio-wave-unplayed: rgba(255,255,255,0.3);
+  --audio-wave-played: rgba(255,255,255,0.7);
+  --ig-accent: #A855F7;
+  --ig-button-text: #A855F7;
+  --ig-button-border: #363636;
+}

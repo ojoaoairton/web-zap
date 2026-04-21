@@ -8,6 +8,9 @@ interface MessageBubbleProps {
   buttonsActive: boolean;
   onButtonClick: (btn: ButtonOption) => void;
   userReplied?: boolean;
+  theme?: string;
+  isLastInGroup?: boolean;
+  avatarUrl?: string;
 }
 
 /** Detect if a video URL is YouTube or Google Drive embed */
@@ -34,8 +37,14 @@ function parseWhatsAppMarkdown(text: string): React.ReactNode {
   });
 }
 
-const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied }, ref) => {
+const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied, theme, isLastInGroup, avatarUrl }, ref) => {
+  const isInstagram = theme === 'instagram';
   const isUser = msg.type === 'user';
+
+  // Instagram DM uses specific border-radius: 18px on most corners,
+  // 4px on the tail corner (bottom-right for sent, bottom-left for received)
+  const igSentRadius = '18px 18px 4px 18px';
+  const igReceivedRadius = '18px 18px 18px 4px';
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -148,20 +157,25 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
       >
-        <div className="max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] rounded-lg rounded-tl-sm shadow-sm relative overflow-visible">
-          <div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: '0px',
-              left: '-8px',
-              width: '0',
-              height: '0',
-              borderTop: '8px solid var(--bubble-received)',
-              borderLeft: '8px solid transparent',
-            }}
-          />
-          <div className="overflow-hidden rounded-lg rounded-tl-sm">
+        <div
+          className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] shadow-sm relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+        >
+          {!isInstagram && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '-8px',
+                width: '0',
+                height: '0',
+                borderTop: '8px solid var(--bubble-received)',
+                borderLeft: '8px solid transparent',
+              }}
+            />
+          )}
+          <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2 text-[14.5px] leading-[19px]">
               {msg.content && (
                 <>
@@ -185,7 +199,9 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                   type="button"
                   onClick={() => buttonsActive && onButtonClick(btn)}
                   disabled={!buttonsActive}
-                  className={`w-full px-3 py-2 bg-transparent text-[#25D366] text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-75 ${
+                  className={`w-full px-3 py-2 bg-transparent text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-75 ${
+                    isInstagram ? 'text-[var(--ig-button-text,#833ab4)]' : 'text-[#25D366]'
+                  } ${
                     idx === 0 ? '' : 'border-t'
                   }`}
                   style={{ borderColor: 'var(--color-border)' }}
@@ -214,19 +230,24 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
       >
-        <div className="max-w-[80%] bg-[var(--bubble-received)] rounded-lg rounded-tl-sm shadow-sm px-3 py-2 relative overflow-visible">
-          <div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: '0px',
-              left: '-8px',
-              width: '0',
-              height: '0',
-              borderTop: '8px solid var(--bubble-received)',
-              borderLeft: '8px solid transparent',
-            }}
-          />
+        <div
+          className={`max-w-[80%] bg-[var(--bubble-received)] shadow-sm px-3 py-2 relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+        >
+          {!isInstagram && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '-8px',
+                width: '0',
+                height: '0',
+                borderTop: '8px solid var(--bubble-received)',
+                borderLeft: '8px solid transparent',
+              }}
+            />
+          )}
           <div className="flex items-center gap-2 text-[#25D366] text-sm font-medium">
             <Mic size={14} />
             <span>{msg.content}</span>
@@ -245,20 +266,25 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
       >
-        <div className="max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] rounded-lg rounded-tl-sm overflow-visible relative">
-          <div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: '0px',
-              left: '-8px',
-              width: '0',
-              height: '0',
-              borderTop: '8px solid var(--bubble-received)',
-              borderLeft: '8px solid transparent',
-            }}
-          />
-          <div className="overflow-hidden rounded-lg rounded-tl-sm">
+        <div
+          className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] overflow-visible relative ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+        >
+          {!isInstagram && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '-8px',
+                width: '0',
+                height: '0',
+                borderTop: '8px solid var(--bubble-received)',
+                borderLeft: '8px solid transparent',
+              }}
+            />
+          )}
+          <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2">
             <div className="flex items-start gap-2">
               <div style={{ backgroundColor: 'var(--pix-icon-bg)', borderRadius: '50%', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -297,40 +323,64 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       initial={{ opacity: 0, y: 8, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
     >
+      {/* Bot tiny avatar for Instagram */}
+      {isInstagram && !isUser && (
+        <div className="w-[28px] h-[28px] shrink-0 mr-2 self-end mb-[2px]">
+          {isLastInGroup && (
+            avatarUrl ? (
+              <img src={avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              <div className="w-full h-full rounded-full bg-[#262626] flex items-center justify-center">
+                <Bot size={16} className="text-[#A855F7]" />
+              </div>
+            )
+          )}
+        </div>
+      )}
+
       <div
         className={`max-w-[80%] px-3 py-2 text-[14.5px] leading-[19px] shadow-sm relative ${
-          isUser
-            ? 'bg-[var(--bubble-sent)] text-[var(--text-primary)] rounded-lg rounded-tr-sm'
-            : 'bg-[var(--bubble-received)] text-[var(--text-primary)] rounded-lg rounded-tl-sm'
+          isInstagram
+            ? (isUser
+                ? 'bg-[var(--bubble-sent)] text-white mb-0'
+                : 'bg-[var(--bubble-received)] text-[var(--text-primary)] mb-0')
+            : (isUser
+                ? 'bg-[var(--bubble-sent)] text-[var(--text-primary)] rounded-lg rounded-tr-sm'
+                : 'bg-[var(--bubble-received)] text-[var(--text-primary)] rounded-lg rounded-tl-sm')
         }`}
-        style={msg.messageType === 'audio' ? { minWidth: '280px', overflow: 'visible' } : { overflow: 'visible' }}
+        style={{
+          ...(msg.messageType === 'audio' ? { minWidth: '280px', overflow: 'visible' } : { overflow: 'visible' }),
+          ...(isInstagram ? { borderRadius: isUser ? igSentRadius : igReceivedRadius } : {}),
+        }}
       >
-        <div
-          aria-hidden
-          style={
-            isUser
-              ? {
-                  position: 'absolute',
-                  top: '0px',
-                  right: '-8px',
-                  width: '0',
-                  height: '0',
-                  borderTop: '8px solid var(--bubble-sent)',
-                  borderRight: '8px solid transparent',
-                }
-              : {
-                  position: 'absolute',
-                  top: '0px',
-                  left: '-8px',
-                  width: '0',
-                  height: '0',
-                  borderTop: '8px solid var(--bubble-received)',
-                  borderLeft: '8px solid transparent',
-                }
-          }
-        />
+        {!isInstagram && (
+          <div
+            aria-hidden
+            style={
+              isUser
+                ? {
+                    position: 'absolute',
+                    top: '0px',
+                    right: '-8px',
+                    width: '0',
+                    height: '0',
+                    borderTop: '8px solid var(--bubble-sent)',
+                    borderRight: '8px solid transparent',
+                  }
+                : {
+                    position: 'absolute',
+                    top: '0px',
+                    left: '-8px',
+                    width: '0',
+                    height: '0',
+                    borderTop: '8px solid var(--bubble-received)',
+                    borderLeft: '8px solid transparent',
+                  }
+            }
+          />
+        )}
         {msg.messageType === 'text' && (
           <p className="whitespace-pre-wrap break-words py-0.5">
             {parseWhatsAppMarkdown(msg.content || '')}
@@ -428,10 +478,12 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                   <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                     {elapsed}
                   </span>
-                  <span className="text-[11px] text-muted-foreground/50 leading-none inline-flex items-center gap-1">
-                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    {isUser && <TickIcon />}
-                  </span>
+                  {!isInstagram && (
+                    <span className="text-[11px] text-muted-foreground/50 leading-none inline-flex items-center gap-1">
+                      {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      {isUser && <TickIcon />}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -477,13 +529,21 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           </div>
         )}
 
-        {msg.messageType !== 'audio' && (
+        {!isInstagram && msg.messageType !== 'audio' && (
           <span className="text-[11px] text-muted-foreground/50 float-right ml-2 mt-1 leading-none inline-flex items-center gap-1">
             {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             {isUser && <TickIcon />}
           </span>
         )}
       </div>
+
+      {isInstagram && isLastInGroup && !isUser && (
+        <div style={{ position: 'absolute', bottom: '-18px', left: '0', display: 'flex', width: '100%', justifyContent: 'flex-end', paddingRight: '8px' }}>
+          <span className="text-[11px] text-[#737373]">
+            {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+      )}
     </motion.div>
   );
 });
@@ -493,6 +553,7 @@ export default React.memo(MessageBubble, (prev, next) => {
   return (
     prev.msg === next.msg &&
     prev.buttonsActive === next.buttonsActive &&
-    prev.userReplied === next.userReplied
+    prev.userReplied === next.userReplied &&
+    prev.theme === next.theme
   );
 });

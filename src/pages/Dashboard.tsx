@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Plus, Copy, Trash2, Edit2, Play, Search, BarChart3, Eye, MousePointerClick, ShoppingCart, Loader2 } from 'lucide-react';
+import { MessageCircle, Plus, Copy, Trash2, Edit2, Play, Search, BarChart3, Eye, MousePointerClick, ShoppingCart, Loader2, LogOut } from 'lucide-react';
 import { Project } from '@/types/project';
 import { getProjects, createProject, duplicateProject, deleteProject } from '@/lib/projectsService';
 import { getAnalytics } from '@/lib/analytics';
@@ -120,10 +120,24 @@ const Dashboard: React.FC = () => {
           </div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">ZaperFlux</h1>
         </div>
-        <Button onClick={handleNewProject} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Projeto
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground hover:text-destructive transition-colors mr-2 h-8"
+            onClick={() => {
+              sessionStorage.removeItem('zf_authenticated');
+              navigate('/login');
+            }}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
+          </Button>
+          <Button onClick={handleNewProject} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Novo Projeto
+          </Button>
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-6 space-y-6">

@@ -119,9 +119,11 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto">Auto</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="auto">Auto (sistema)</SelectItem>
+                  <SelectItem value="dark">Dark (WhatsApp)</SelectItem>
+                  <SelectItem value="light">Light (WhatsApp)</SelectItem>
+                  <SelectItem value="instagram">Instagram DM</SelectItem>
+                  <SelectItem value="messenger" disabled>Messenger (em breve)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

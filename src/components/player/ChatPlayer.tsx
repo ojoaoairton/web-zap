@@ -3,7 +3,7 @@ import { FlowContext } from '@/context/FlowContext';
 import { ChatMessage, Flow, FlowBlock, ButtonOption } from '@/types/flow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, RotateCcw, Bot, Smile, Play } from 'lucide-react';
+import { Send, RotateCcw, Bot, Smile, Play, ArrowLeft, Phone, Video, PlusCircle, Camera } from 'lucide-react';
 import { unlockAudio, playMessageSound } from '@/lib/messageSound';
 import { v4 as uuid } from 'uuid';
 import { AnimatePresence } from 'framer-motion';
@@ -91,9 +91,12 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       messagesRef.current = next;
       return next;
     });
-    if (msg.type === 'bot' && msg.messageType !== 'recording') playMessageSound();
+    // Instagram DM não tem som de notificação
+    if (msg.type === 'bot' && msg.messageType !== 'recording' && flow.theme !== 'instagram') {
+      playMessageSound();
+    }
     return newMsg;
-  }, []);
+  }, [flow.theme]);
 
   const normalizeRestoredMessages = useCallback((msgs: ChatMessage[]) => {
     const out: ChatMessage[] = [];
@@ -550,6 +553,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   }, [messages, isTyping, scrollToBottom]);
 
   const dataTheme = flow.theme === 'auto' ? undefined : flow.theme;
+  const isMessagingTheme = flow.theme === 'instagram' || flow.theme === 'messenger';
 
   if (!hasFlow) return null;
 
@@ -558,82 +562,170 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       className="chat-theme h-full w-full flex flex-col overflow-hidden"
       data-theme={dataTheme}
       style={{
-        backgroundImage: `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url("${PATTERN_BASE64}")`,
-        backgroundRepeat: 'repeat',
-        backgroundSize: '400px auto',
-        backgroundPosition: 'top left',
+        backgroundImage: isMessagingTheme
+          ? 'none'
+          : `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url("${PATTERN_BASE64}")`,
+        backgroundColor: isMessagingTheme ? 'var(--bg-overlay)' : undefined,
+        backgroundRepeat: isMessagingTheme ? undefined : 'repeat',
+        backgroundSize: isMessagingTheme ? undefined : '400px auto',
+        backgroundPosition: isMessagingTheme ? undefined : 'top left',
         color: 'var(--text-primary)',
       }}
       onClick={() => unlockAudio()}
     >
         {/* Header */}
-      <div className="sticky top-0 z-[60] bg-[var(--header-bg)] border-b border-border/50 px-4 py-2.5 flex items-center justify-between shrink-0">
+      <div className={`sticky top-0 z-[60] bg-[var(--header-bg)] border-b px-4 py-2.5 flex items-center justify-between shrink-0 ${isMessagingTheme ? 'border-[var(--color-border)]' : 'border-border/50'}`}>
         <div className="flex items-center gap-3">
+          {isMessagingTheme && (
+            <ArrowLeft className="w-6 h-6 text-[var(--text-primary)] shrink-0" />
+          )}
           {flow.avatarUrl ? (
-            <img src={flow.avatarUrl} alt="avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10" />
+            isMessagingTheme ? (
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  padding: '2px',
+                  background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+                  flexShrink: 0
+                }}
+              >
+                <img src={flow.avatarUrl} alt="avatar" style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid var(--header-bg)',
+                }} />
+              </div>
+            ) : (
+              <img src={flow.avatarUrl} alt="avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10 shrink-0" />
+            )
           ) : (
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/10">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/10 shrink-0">
               <Bot className="w-5 h-5 text-primary" />
             </div>
           )}
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <h3 className="text-sm font-semibold leading-tight text-[var(--text-primary)]">{flow.contactName || flow.name}</h3>
-              <img src={seloVerificado} alt="Verificado" className="w-[16px] h-[16px] shrink-0" />
+              <h3 className={`text-sm leading-tight text-[var(--text-primary)] truncate ${isMessagingTheme ? 'font-bold' : 'font-semibold'}`}>{flow.contactName || flow.name}</h3>
+              <img src={seloVerificado} alt="Verificado" className="w-[14px] h-[14px] shrink-0" />
             </div>
-            <p className="text-[12px] text-primary/80 leading-tight mt-0.5">
-              {isTyping ? 'digitando...' : isRunning ? 'online' : 'offline'}
+            <p className={`text-[12px] leading-tight mt-0.5 truncate ${isMessagingTheme ? 'text-[var(--text-secondary)] font-medium' : 'text-primary/80'}`}>
+              {isTyping ? 'digitando...' : isRunning ? (isMessagingTheme ? 'Online agora' : 'online') : (isMessagingTheme ? 'Online agora' : 'offline')}
             </p>
           </div>
         </div>
-        {isPreview === true && (
-          <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground hover:text-foreground h-8 px-2.5">
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-5 ml-2">
+          {isMessagingTheme ? (
+            <>
+              <PlusCircle className="w-[26px] h-[26px] text-[var(--text-primary)] shrink-0 stroke-[1.5]" />
+              <Phone className="w-[26px] h-[26px] text-[var(--text-primary)] shrink-0 stroke-[1.5]" />
+              <Video className="w-[26px] h-[26px] text-[var(--text-primary)] shrink-0 stroke-[1.5]" />
+            </>
+          ) : (
+            isPreview === true && (
+              <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground hover:text-foreground h-8 px-2.5">
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            )
+          )}
+        </div>
       </div>
 
       {(!isPreview || chatStarted) ? (
         <>
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-2">
-            {/* Business account banner */}
-            <div className="flex justify-center mb-2">
-              <span
-                className="text-[11px] text-muted-foreground/70 bg-transparent rounded-md shadow-sm"
-                style={{
-                  backgroundColor: 'var(--commercial-bg)',
-                  borderRadius: '8px',
-                  padding: '4px 12px',
-                  backdropFilter: 'blur(4px)',
-                  display: 'inline-block',
-                }}
-              >
-                Esta é uma conta comercial. <span className="text-primary/80">Toque para saber mais</span>
-              </span>
-            </div>
+            {/* Business account banner or Profile Intro */}
+            {isMessagingTheme ? (
+              <div className="flex flex-col items-center mt-6 w-full max-w-[280px] mx-auto mb-10 pt-4">
+                {flow.avatarUrl ? (
+                  <img
+                    src={flow.avatarUrl}
+                    alt="avatar"
+                    style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px' }}
+                  />
+                ) : (
+                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <Bot size={40} style={{ color: '#A855F7' }} />
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-1 justify-center mb-1">
+                  <span style={{ color: 'var(--text-primary)', fontSize: '20px', fontWeight: 700 }}>
+                    {flow.contactName || flow.name}
+                  </span>
+                  <img src={seloVerificado} alt="Verificado" className="w-[18px] h-[18px]" />
+                </div>
+                
+                <span style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                  {flow.name.toLowerCase().replace(/[^a-z0-9]/g, '')}
+                </span>
+
+                <span style={{ color: '#3797f0', fontSize: '13px', textAlign: 'center', fontWeight: 500 }}>
+                  Saiba mais sobre as conversas comerciais
+                </span>
+              </div>
+            ) : (
+              <div className="flex justify-center mb-2">
+                <span
+                  className="text-[11px] text-muted-foreground/70 bg-transparent rounded-md shadow-sm"
+                  style={{
+                    backgroundColor: 'var(--commercial-bg)',
+                    borderRadius: '8px',
+                    padding: '4px 12px',
+                    backdropFilter: 'blur(4px)',
+                    display: 'inline-block',
+                  }}
+                >
+                  Esta é uma conta comercial. <span className="text-primary/80">Toque para saber mais</span>
+                </span>
+              </div>
+            )}
             <AnimatePresence mode="popLayout">
-              {messages.map(msg => (
-                <MessageBubble
-                  key={msg.id}
-                  msg={msg}
-                  buttonsActive={buttonsBlockId !== null}
-                  onButtonClick={handleButtonClick}
-                  userReplied={userReplied}
-                />
-              ))}
+              {messages.map((msg, index) => {
+                const nextMsg = messages[index + 1];
+                const isLastInGroup = !nextMsg || nextMsg.type !== msg.type;
+                
+                return (
+                  <MessageBubble
+                    key={msg.id}
+                    msg={msg}
+                    buttonsActive={buttonsBlockId !== null}
+                    onButtonClick={handleButtonClick}
+                    userReplied={userReplied}
+                    theme={flow.theme}
+                    isLastInGroup={isLastInGroup}
+                    avatarUrl={flow.avatarUrl}
+                  />
+                );
+              })}
               {isTyping && <TypingIndicator key="typing" />}
             </AnimatePresence>
           </div>
 
           {/* Input bar */}
-          <div className="bg-[var(--header-bg)] border-t border-border/50 px-2 py-2 shrink-0">
+          <div
+            className={`border-t px-2 py-2 shrink-0 ${isMessagingTheme ? '' : 'bg-[var(--header-bg)] border-border/50'}`}
+            style={isMessagingTheme ? { background: 'var(--header-bg)', borderColor: 'var(--input-border, var(--color-border))' } : undefined}
+          >
             <form
               onSubmit={e => { e.preventDefault(); handleInputSubmit(); }}
               className="flex items-center gap-2"
             >
-              <div className="flex-1 flex items-center bg-[var(--input-bg)] rounded-full px-4 py-1">
-                <Smile className="w-5 h-5 text-muted-foreground/40 shrink-0 mr-2" />
+              <div
+                className={`flex-1 flex items-center rounded-full px-4 py-1 ${isMessagingTheme ? '' : 'bg-[var(--input-bg)]'}`}
+                style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
+              >
+                {isMessagingTheme ? (
+                  <div className="w-8 h-8 rounded-full bg-[var(--ig-accent)] flex items-center justify-center shrink-0 mr-2">
+                    <Camera className="w-[18px] h-[18px] text-white" />
+                  </div>
+                ) : (
+                  <Smile className="w-5 h-5 text-muted-foreground/40 shrink-0 mr-2" />
+                )}
                 <Input
                   ref={inputRef}
                   value={inputValue}
@@ -641,17 +733,17 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   disabled={!inputEnabled || isSubmitting}
                   placeholder={
                     inputEnabled
-                      ? (currentInputBlock?.placeholder || 'Digite sua resposta...')
-                      : 'Aguardando...'
+                      ? (currentInputBlock?.placeholder || (isMessagingTheme ? 'Mensagem...' : 'Digite sua resposta...'))
+                      : (isMessagingTheme ? 'Mensagem...' : 'Aguardando...')
                   }
-                  className="flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[var(--text-primary)] placeholder:text-muted-foreground/50 disabled:opacity-30 px-0"
+                  className={`flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[var(--text-primary)] disabled:opacity-30 px-0 ${isMessagingTheme ? 'placeholder:text-[#737373]' : 'placeholder:text-muted-foreground/50'}`}
                 />
               </div>
               <Button
                 type="submit"
                 size="icon"
                 disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md"
+                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'bg-[var(--ig-accent)] text-white hover:bg-[var(--ig-accent)]/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -660,7 +752,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         </>
       ) : (
         <div style={{ display: 'flex', flex: 1, padding: '0 24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px', width: '100%' }} onClick={startChat} className="cursor-pointer">
             {flow.avatarUrl ? (
               <img
                 src={flow.avatarUrl}
@@ -677,13 +769,13 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
               {flow.contactName || flow.name}
             </span>
 
-            <Button type="button" onClick={startChat} className="rounded-full w-14 h-14 p-0 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Play className="w-5 h-5" />
-            </Button>
+                <Button type="button" onClick={startChat} className="rounded-full w-14 h-14 p-0 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Play className="w-5 h-5" />
+                </Button>
 
-            <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-              Toque para iniciar
-            </span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  Toque para iniciar
+                </span>
           </div>
         </div>
       )}

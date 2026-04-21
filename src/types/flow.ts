@@ -1,6 +1,6 @@
 export type BlockType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'input' | 'delay' | 'redirect' | 'pix';
 
-export type FlowTheme = 'auto' | 'dark' | 'light';
+export type FlowTheme = 'auto' | 'dark' | 'light' | 'instagram' | 'messenger';
 
 export type IntegrationType = 'utmify' | 'meta' | 'gtm' | 'tiktok';
 

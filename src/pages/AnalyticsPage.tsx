@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LayoutDashboard, Target, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Target, MessageSquare, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { getAnalytics, ProjectAnalytics } from '@/lib/analytics';
 import { getProjects } from '@/lib/projectsService';
 import { trackPresence } from '@/lib/presence';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import { supabase } from '@/lib/supabase';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, subDays, startOfMonth, endOfMonth, startOfToday, endOfToday, subMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+type FilterType = 'today' | 'yesterday' | '7d' | '30d' | 'thisMonth' | 'lastMonth' | 'custom';
 
 const AnalyticsPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -16,11 +23,49 @@ const AnalyticsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState(0);
 
+  const [filterType, setFilterType] = useState<FilterType>(() => {
+    return (localStorage.getItem('zf_analytics_filter') as FilterType) || '7d';
+  });
+  const [customDateRange, setCustomDateRange] = useState<{ start: Date; end: Date }>({
+    start: subDays(new Date(), 7),
+    end: new Date()
+  });
+
   useEffect(() => {
     async function loadData() {
       if (projectId) {
         try {
           setIsLoading(true);
+          let startDate = startOfToday();
+          let endDate = endOfToday();
+          const today = new Date();
+
+          switch (filterType) {
+             case 'today': break;
+             case 'yesterday':
+               startDate = subDays(startOfToday(), 1);
+               endDate = subDays(endOfToday(), 1);
+               break;
+             case '7d':
+               startDate = subDays(startOfToday(), 7);
+               break;
+             case '30d':
+               startDate = subDays(startOfToday(), 30);
+               break;
+             case 'thisMonth':
+               startDate = startOfMonth(today);
+               break;
+             case 'lastMonth':
+               startDate = startOfMonth(subMonths(today, 1));
+               endDate = endOfMonth(subMonths(today, 1));
+               break;
+             case 'custom':
+               startDate = customDateRange.start;
+               endDate = customDateRange.end;
+               break;
+          }
+
+          localStorage.setItem('zf_analytics_filter', filterType);
           
           // 1. Busca os dados dos projetos (seja do Storage ou da API)
           const projectsData = await getProjects();
@@ -59,9 +104,9 @@ const AnalyticsPage: React.FC = () => {
             console.log('Projetos disponíveis (debug):', projectBySlug);
           }
 
-          console.log('Buscando analytics para project_id:', realProjectId);
+          console.log('Buscando analytics para project_id:', realProjectId, 'entre', startDate, 'e', endDate);
 
-          const analyticsData = await getAnalytics(realProjectId);
+          const analyticsData = await getAnalytics(realProjectId, startDate.toISOString(), endDate.toISOString());
           setData(analyticsData);
         } catch (e) {
           console.error('Erro ao buscar analytics na nuvem:', e);
@@ -71,7 +116,7 @@ const AnalyticsPage: React.FC = () => {
       }
     }
     loadData();
-  }, [projectId]);
+  }, [projectId, filterType, customDateRange]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -147,7 +192,63 @@ const AnalyticsPage: React.FC = () => {
 
       <main className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Painel Central Reutilizando o Componente */}
-        <AnalyticsCard data={data} />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2 bg-card p-4 rounded-lg border border-border">
+           <h2 className="text-xl font-semibold tracking-tight">Visão Geral</h2>
+           <div className="flex flex-wrap items-center gap-2">
+             <Select value={filterType} onValueChange={(val: any) => setFilterType(val)}>
+               <SelectTrigger className="w-[180px] bg-background">
+                 <SelectValue placeholder="Período" />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="today">Hoje</SelectItem>
+                 <SelectItem value="yesterday">Ontem</SelectItem>
+                 <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                 <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                 <SelectItem value="thisMonth">Este mês</SelectItem>
+                 <SelectItem value="lastMonth">Mês passado</SelectItem>
+                 <SelectItem value="custom">Personalizado</SelectItem>
+               </SelectContent>
+             </Select>
+             
+             {filterType === 'custom' && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[240px] justify-start text-left font-normal bg-background">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {customDateRange.start ? (
+                        customDateRange.end ? (
+                          <>
+                            {format(customDateRange.start, "dd/MM/yyyy")} - {format(customDateRange.end, "dd/MM/yyyy")}
+                          </>
+                        ) : (
+                          format(customDateRange.start, "dd/MM/yyyy")
+                        )
+                      ) : (
+                        <span>Selecione a data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={customDateRange.start}
+                      selected={{ from: customDateRange.start, to: customDateRange.end }}
+                      onSelect={(range) => {
+                         if (range) {
+                           setCustomDateRange({ start: range.from!, end: range.to || range.from! });
+                         }
+                      }}
+                      numberOfMonths={2}
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
+             )}
+           </div>
+        </div>
+
+        <AnalyticsCard data={data!} />
 
         {/* Detalhamento Estendido */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

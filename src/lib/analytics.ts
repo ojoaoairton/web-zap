@@ -87,7 +87,7 @@ export async function trackAnalyticsEvent(projectId: string, flowName: string, e
   }
 }
 
-export async function getAnalytics(projectId: string): Promise<ProjectAnalytics> {
+export async function getAnalytics(projectId: string, startDate?: string, endDate?: string): Promise<ProjectAnalytics> {
   const defaultAnalytics: ProjectAnalytics = {
     projectId,
     events: [],
@@ -99,12 +99,21 @@ export async function getAnalytics(projectId: string): Promise<ProjectAnalytics>
   if (!projectId) return defaultAnalytics;
 
   try {
-    const { data: events, error } = await supabase
+    let query = supabase
       .from('analytics_events')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
-      .limit(1000);
+      .limit(5000);
+
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+
+    const { data: events, error } = await query;
 
     if (error) {
       console.error('Erro ao buscar analytics na nuvem:', error);

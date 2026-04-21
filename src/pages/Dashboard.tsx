@@ -213,7 +213,9 @@ const Dashboard: React.FC = () => {
 
                   <div className="flex items-center justify-between mt-2">
                     <CardDescription className="text-[10px]">
-                      {new Date(project.updatedAt).toLocaleDateString()}
+                      {project.updatedAt && !isNaN(new Date(project.updatedAt).getTime())
+                        ? new Date(project.updatedAt).toLocaleDateString('pt-BR')
+                        : ''}
                     </CardDescription>
 
                     {onlineCounts[project.id] > 0 && (

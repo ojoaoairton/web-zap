@@ -21,9 +21,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/analytics/:projectId" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-          <Route path="/builder/:projectId" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics/:projectId" element={<AnalyticsPage />} />
+          <Route path="/builder/:projectId" element={<Index />} />
           <Route path="/p/:flowId" element={<PlayerPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -36,6 +36,9 @@ export function initPixel(pixelId: string) {
 }
 
 export function trackEvent(eventName: string, data?: Record<string, any>) {
+  // Ignorar disparo client-side de InitiateCheckout para evitar duplicação com CAPI
+  if (eventName === 'InitiateCheckout') return;
+
   if (window.fbq) {
     window.fbq('track', eventName, data || {});
   }

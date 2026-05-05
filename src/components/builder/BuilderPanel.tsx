@@ -88,9 +88,23 @@ const InsertZone = ({ onInsert }: { onInsert: (type: BlockType) => void }) => {
   return (
     <div
       className="insert-zone"
-      style={{ height: '24px', display: 'flex', 
-        alignItems: 'center', position: 'relative',
-        margin: '0 0' }}
+      style={{
+        height: '28px',
+        paddingTop: '4px',
+        paddingBottom: '4px',
+        display: 'flex',
+        alignItems: 'center',
+        position: 'relative',
+        cursor: 'pointer',
+        borderTop: '1px dashed rgba(255,255,255,0.05)',
+        width: '100%',
+        flexShrink: 0
+      }}
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest('button')) {
+          setShowMenu(true);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { 
         if (!showMenu) setHovered(false); 

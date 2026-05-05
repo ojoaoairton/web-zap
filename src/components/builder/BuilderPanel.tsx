@@ -6,7 +6,7 @@ import BlockEditor from './BlockEditor';
 import SettingsPanel from './SettingsPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BlockType } from '@/types/flow';
+import { BlockType, FlowBlock } from '@/types/flow';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Plus, Download, Image, Video, Music, File,
@@ -53,6 +53,101 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
   { type: 'redirect', label: 'Redirect', icon: <ExternalLink size={16} /> },
 ];
 
+const createDefaultBlock = (type: BlockType): FlowBlock => {
+  const newBlock: any = { id: crypto.randomUUID(), type };
+  switch (type) {
+    case 'text': newBlock.content = ''; break;
+    case 'image': newBlock.url = ''; break;
+    case 'video': newBlock.url = ''; break;
+    case 'audio': newBlock.url = ''; newBlock.transcription = ''; newBlock.duration = ''; newBlock.forwarded = false; break;
+    case 'file': newBlock.url = ''; newBlock.fileName = ''; newBlock.fileSize = ''; break;
+    case 'buttons': newBlock.content = ''; newBlock.buttons = []; break;
+    case 'pix': newBlock.pixData = { receiverName: '', pixKey: '' }; break;
+    case 'input': newBlock.inputType = 'texto'; newBlock.placeholder = ''; newBlock.variable = ''; break;
+    case 'delay': newBlock.delayMs = 1500; break;
+    case 'redirect': newBlock.url = ''; break;
+  }
+  return newBlock;
+};
+
+const InsertZone = ({ onInsert }: { onInsert: (type: BlockType) => void }) => {
+  const [hovered, setHovered] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.insert-zone')) {
+        setShowMenu(false);
+        setHovered(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
+  return (
+    <div
+      className="insert-zone"
+      style={{ height: '24px', display: 'flex', 
+        alignItems: 'center', position: 'relative',
+        margin: '0 0' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { 
+        if (!showMenu) setHovered(false); 
+      }}
+    >
+      {hovered && (
+        <>
+          <div style={{
+            position: 'absolute', left: 0, right: 0,
+            height: '1px',
+            background: 'rgba(37,211,102,0.4)'
+          }}/>
+          
+          <button
+            onClick={() => setShowMenu(true)}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '24px', height: '24px',
+              borderRadius: '50%',
+              background: '#25D366',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10
+            }}
+          >
+            <Plus size={14} color="white" />
+          </button>
+          
+          {showMenu && (
+            <div className="absolute left-1/2 -translate-x-1/2 top-[28px] bg-popover border border-border rounded-lg p-1 z-50 grid grid-cols-2 gap-0.5 min-w-[200px] shadow-xl">
+              {blockOptions.map(item => (
+                <button
+                  key={item.type}
+                  onClick={() => {
+                    onInsert(item.type);
+                    setShowMenu(false);
+                    setHovered(false);
+                  }}
+                  className="px-2 py-1.5 bg-transparent border-none rounded-md cursor-pointer text-xs text-popover-foreground flex items-center gap-1.5 text-left hover:bg-muted transition-colors"
+                >
+                  <span className="text-primary opacity-80">{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
 const BuilderPanel: React.FC = () => {
   const navigate = useNavigate();
   const { flow, setFlow, addBlock } = useFlow();
@@ -72,6 +167,21 @@ const BuilderPanel: React.FC = () => {
       if (linkCopiedTimerRef.current) window.clearTimeout(linkCopiedTimerRef.current);
     };
   }, []);
+
+  const handleInsertAt = (blockType: BlockType, atIndex: number) => {
+    const newBlock = createDefaultBlock(blockType);
+    
+    const newBlocks = [...flow.blocks];
+    newBlocks.splice(atIndex, 0, newBlock);
+    
+    // Recalcular os next de todos os blocos
+    const relinked = newBlocks.map((b, i) => {
+      if (b.type === 'buttons') return b; // botões têm next próprio
+      return { ...b, next: newBlocks[i + 1]?.id || undefined };
+    });
+    
+    setFlow({ ...flow, blocks: relinked });
+  };
 
   const exportJSON = () => {
     const json = JSON.stringify(flow, null, 2);
@@ -290,9 +400,24 @@ const BuilderPanel: React.FC = () => {
       </div>
 
       {/* Blocks list */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-3">
-        {flow.blocks.map((block, i) => (
-          <BlockEditor key={block.id} block={block} index={i} />
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-0">
+        {flow.blocks.map((block, index) => (
+          <React.Fragment key={block.id}>
+            {/* Zona de inserção ANTES do primeiro bloco */}
+            {index === 0 && (
+              <InsertZone 
+                onInsert={(type) => handleInsertAt(type, 0)}
+              />
+            )}
+            
+            {/* Bloco normal */}
+            <BlockEditor block={block} index={index} />
+            
+            {/* Zona de inserção APÓS cada bloco */}
+            <InsertZone 
+              onInsert={(type) => handleInsertAt(type, index + 1)}
+            />
+          </React.Fragment>
         ))}
 
         {flow.blocks.length === 0 && (

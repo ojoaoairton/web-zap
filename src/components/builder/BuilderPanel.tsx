@@ -19,6 +19,7 @@ import {
   Check,
   Link,
   ArrowLeft,
+  CreditCard,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -36,16 +37,7 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
   {
     type: 'pix',
     label: 'PIX',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-        <g fill="#32BCAD">
-          <path d="M209.6 81.6c25.6-25.6 67.2-25.6 92.8 0l48 48h-36.8c-16 0-31.2 6.4-42.4 17.6l-49.6 49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H116l93.6-48z" />
-          <path d="M81.6 209.6L48 256l33.6 46.4h47.2c16 0 31.2-6.4 42.4-17.6l49.6-49.6-49.6-49.6c-11.2-11.2-26.4-17.6-42.4-17.6H81.6z" />
-          <path d="M302.4 430.4c-25.6 25.6-67.2 25.6-92.8 0L116 382.4h36.8c16 0 31.2-6.4 42.4-17.6l49.6-49.6 49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H396l-93.6 48z" />
-          <path d="M430.4 209.6h-47.2c-16 0-31.2 6.4-42.4 17.6L291.2 276.8l49.6 49.6c11.2 11.2 26.4 17.6 42.4 17.6H430.4L464 256l-33.6-46.4z" />
-        </g>
-      </svg>
-    ),
+    icon: <CreditCard size={16} />,
   },
   { type: 'buttons', label: 'Botões', icon: <LayoutList size={16} /> },
   { type: 'input', label: 'Input', icon: <KeyboardIcon size={16} /> },

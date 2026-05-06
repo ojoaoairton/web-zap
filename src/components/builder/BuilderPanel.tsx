@@ -408,7 +408,7 @@ const BuilderPanel: React.FC = () => {
       {/* Blocks list */}
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-0">
         {flow.blocks.map((block, index) => (
-          <React.Fragment key={block.id}>
+          <React.Fragment key={`block-editor-${flow.blocks.length}-${block.id}`}>
             {/* Zona de inserção ANTES do primeiro bloco */}
             {index === 0 && (
               <InsertZone 

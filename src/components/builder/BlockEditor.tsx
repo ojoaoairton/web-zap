@@ -34,8 +34,10 @@ const typeLabels: Record<BlockType, { label: string; icon: React.ReactNode }> = 
   redirect: { label: 'Redirect', icon: <ExternalLink size={16} /> },
 };
 
-const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block, index }) => {
+const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block: initialBlock, index }) => {
   const { updateBlock, removeBlock, moveBlock, flow } = useFlow();
+
+  const block = flow.blocks.find(b => b.id === initialBlock.id) || initialBlock;
 
   const calcTypingDelay = (text: string): number => {
     return Math.min(Math.max((text.length / 80) * 1000, 1000), 6000);
@@ -216,11 +218,18 @@ const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block, ind
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Nenhum</SelectItem>
-                      {flow.blocks.filter(b => b.id !== block.id).map((b, i) => (
-                        <SelectItem key={b.id} value={b.id}>
-                          #{i + 1} {typeLabels[b.type].label}
-                        </SelectItem>
-                      ))}
+                      {flow.blocks
+                        .filter(b => b.id !== block.id)
+                        .map((b) => {
+                          const blockIndex = flow.blocks.findIndex(fb => fb.id === b.id);
+                          return (
+                            <SelectItem key={b.id} value={b.id}>
+                              #{blockIndex + 1} {typeLabels[b.type].label}
+                              {b.content ? ` — ${b.content.substring(0, 30)}...` : ''}
+                            </SelectItem>
+                          );
+                        })
+                      }
                     </SelectContent>
                   </Select>
                   <Button

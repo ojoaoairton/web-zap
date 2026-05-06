@@ -73,6 +73,11 @@ export interface Flow {
   /** Custom scripts to inject */
   headScripts?: string;
   bodyScripts?: string;
+  abTest?: {
+    enabled: boolean;
+    variantBSlug: string;
+    splitPercentage: number;
+  };
 }
 
 export interface ChatMessage {

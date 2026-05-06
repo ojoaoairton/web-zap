@@ -40,12 +40,41 @@ export default function PlayerPage() {
           try {
             const project = await getProjectBySlug(flowId);
             if (project && project.flow) {
-              setFlow(project.flow);
+              const loadedFlow = project.flow;
+              
+              const runAbTest = async (flowA: Flow) => {
+                if (!flowA.abTest?.enabled) return flowA;
+                
+                const assignedVariant = localStorage.getItem('zf_ab_' + flowId);
+                
+                if (assignedVariant === 'B') {
+                  const flowB = await getProjectBySlug(flowA.abTest.variantBSlug);
+                  return flowB?.flow || flowA;
+                }
+                
+                if (assignedVariant === 'A') return flowA;
+                
+                const random = Math.random() * 100;
+                const variant = random < flowA.abTest.splitPercentage ? 'A' : 'B';
+                
+                localStorage.setItem('zf_ab_' + flowId, variant);
+                
+                if (variant === 'B') {
+                  const flowB = await getProjectBySlug(flowA.abTest.variantBSlug);
+                  return flowB?.flow || flowA;
+                }
+                
+                return flowA;
+              };
+
+              const finalFlow = await runAbTest(loadedFlow);
+              setFlow(finalFlow);
+              
               // Salvar header no cache para próxima visita
               localStorage.setItem(HEADER_CACHE_KEY, JSON.stringify({
-                contactName: project.flow.contactName || project.flow.name,
-                avatarUrl: project.flow.avatarUrl || '',
-                theme: project.flow.theme || 'dark',
+                contactName: finalFlow.contactName || finalFlow.name,
+                avatarUrl: finalFlow.avatarUrl || '',
+                theme: finalFlow.theme || 'dark',
               }));
               return;
             }

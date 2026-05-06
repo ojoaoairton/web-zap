@@ -46,6 +46,7 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
   const [trackingOpen, setTrackingOpen] = useState(true);
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [webhookOpen, setWebhookOpen] = useState(false);
+  const [abTestOpen, setAbTestOpen] = useState(false);
 
   const [theme, setTheme] = useState<FlowTheme>(flow.theme || 'auto');
   const [contactName, setContactName] = useState(flow.contactName || '');
@@ -54,6 +55,10 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
   const [customScripts, setCustomScripts] = useState<CustomScript[]>(initialScripts);
   const [webhookUrl, setWebhookUrl] = useState(flow.webhookUrl || '');
   const [webhookEnabled, setWebhookEnabled] = useState(Boolean(flow.webhookEnabled ?? flow.webhookUrl));
+
+  const [abTestEnabled, setAbTestEnabled] = useState(flow.abTest?.enabled || false);
+  const [abTestVariantBSlug, setAbTestVariantBSlug] = useState(flow.abTest?.variantBSlug || '');
+  const [abTestSplitPercentage, setAbTestSplitPercentage] = useState(flow.abTest?.splitPercentage ?? 50);
 
   const [addIntegrationOpen, setAddIntegrationOpen] = useState(false);
   const [addIntegrationType, setAddIntegrationType] = useState<IntegrationType | ''>('');
@@ -66,6 +71,9 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
     setCustomScripts(initialScripts);
     setWebhookUrl(flow.webhookUrl || '');
     setWebhookEnabled(Boolean(flow.webhookEnabled ?? flow.webhookUrl));
+    setAbTestEnabled(flow.abTest?.enabled || false);
+    setAbTestVariantBSlug(flow.abTest?.variantBSlug || '');
+    setAbTestSplitPercentage(flow.abTest?.splitPercentage ?? 50);
   }, [flow, initialIntegrations, initialScripts]);
 
   const save = () => {
@@ -87,6 +95,11 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
       pixelId: meta?.value || '',
       headScripts: nextHeadScripts || '',
       bodyScripts: nextBodyScripts || '',
+      abTest: {
+        enabled: abTestEnabled,
+        variantBSlug: abTestVariantBSlug,
+        splitPercentage: abTestSplitPercentage,
+      }
     });
     onClose();
   };
@@ -311,6 +324,59 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible open={abTestOpen} onOpenChange={setAbTestOpen}>
+          <CollapsibleTrigger className="w-full flex items-center justify-between text-left">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              {abTestOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              Teste A/B
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm text-foreground">Ativar Teste A/B</div>
+              <button
+                type="button"
+                aria-pressed={abTestEnabled}
+                onClick={() => setAbTestEnabled(v => !v)}
+                className={`h-6 w-11 rounded-full border border-border p-0.5 transition-colors ${abTestEnabled ? 'bg-primary' : 'bg-secondary'}`}
+              >
+                <span className={`block h-5 w-5 rounded-full bg-background transition-transform ${abTestEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            {abTestEnabled && (
+              <>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Slug do Fluxo B</label>
+                  <Input
+                    value={abTestVariantBSlug}
+                    onChange={e => setAbTestVariantBSlug(e.target.value)}
+                    placeholder="ex: naty-variante-b"
+                    className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">Crie outro fluxo e cole o slug aqui</div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">% de tráfego para Variante A</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={abTestSplitPercentage}
+                      onChange={e => setAbTestSplitPercentage(Number(e.target.value))}
+                      className="flex-1 accent-primary"
+                    />
+                    <span className="text-sm text-foreground w-8 text-right">{abTestSplitPercentage}%</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {abTestSplitPercentage}% vão para este fluxo, {100 - abTestSplitPercentage}% para o Fluxo B
+                  </div>
+                </div>
+              </>
+            )}
           </CollapsibleContent>
         </Collapsible>
       </div>

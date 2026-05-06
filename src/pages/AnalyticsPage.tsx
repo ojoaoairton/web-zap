@@ -161,6 +161,27 @@ const AnalyticsPage: React.FC = () => {
   const ctaRate = ((data.totalConversions / viewCount) * 100).toFixed(1);
   const clickRate = ((data.totalClicks / viewCount) * 100).toFixed(1);
 
+  const eventsA = data.events.filter(e => e.abVariant === 'A' || !e.abVariant);
+  const eventsB = data.events.filter(e => e.abVariant === 'B');
+  
+  const hasABTest = eventsB.length > 0;
+  
+  const statsA = {
+    views: eventsA.filter(e => e.type === 'view').length,
+    conversions: eventsA.filter(e => e.type === 'reached_cta').length,
+  };
+  const statsB = {
+    views: eventsB.filter(e => e.type === 'view').length,
+    conversions: eventsB.filter(e => e.type === 'reached_cta').length,
+  };
+  
+  const rateA = statsA.views > 0 ? (statsA.conversions / statsA.views) * 100 : 0;
+  const rateB = statsB.views > 0 ? (statsB.conversions / statsB.views) * 100 : 0;
+  
+  let winnerText = 'Empate';
+  if (rateA > rateB && rateA > 0) winnerText = `Variante A (+${(rateA - rateB).toFixed(1)}% de conversão)`;
+  else if (rateB > rateA && rateB > 0) winnerText = `Variante B (+${(rateB - rateA).toFixed(1)}% de conversão)`;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-10">
@@ -321,6 +342,31 @@ const AnalyticsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {hasABTest && (
+            <div className="bg-card border border-border rounded-lg p-5 md:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-muted-foreground" />
+                <h3 className="text-base font-semibold">Resultados do Teste A/B</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="bg-secondary/50 p-4 rounded-lg flex flex-col justify-center">
+                  <span className="font-semibold text-foreground text-lg mb-1">Variante A</span>
+                  <span className="text-muted-foreground">{statsA.views} views, {statsA.conversions} conversões</span>
+                  <span className="text-primary font-bold mt-1 text-xl">{rateA.toFixed(1)}%</span>
+                </div>
+                <div className="bg-secondary/50 p-4 rounded-lg flex flex-col justify-center">
+                  <span className="font-semibold text-foreground text-lg mb-1">Variante B</span>
+                  <span className="text-muted-foreground">{statsB.views} views, {statsB.conversions} conversões</span>
+                  <span className="text-primary font-bold mt-1 text-xl">{rateB.toFixed(1)}%</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <span className="font-semibold text-foreground">Vencedor Atual:</span>
+                <span className="font-bold text-primary text-lg">{winnerText}</span>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

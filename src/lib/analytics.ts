@@ -5,6 +5,7 @@ export interface AnalyticsEvent {
   label?: string;
   timestamp: string;
   sessionId: string;
+  abVariant?: string;
 }
 
 export interface ProjectAnalytics {
@@ -61,6 +62,8 @@ export async function trackAnalyticsEvent(projectId: string, flowName: string, e
 
     const { data: existing } = await query.limit(1);
 
+    const abVariant = localStorage.getItem('zf_ab_' + slug);
+
     // Só insere se não houver NENHUM evento idêntico já salvo nesta sessão
     if (!existing || existing.length === 0) {
       const payload = {
@@ -68,6 +71,7 @@ export async function trackAnalyticsEvent(projectId: string, flowName: string, e
         type: event.type,
         label: event.label || null,
         session_id: sessionId,
+        ab_variant: abVariant || 'A',
       };
 
       console.log('Analytics insert payload:', payload);
@@ -135,7 +139,8 @@ export async function getAnalytics(projectId: string, startDate?: string, endDat
         type: e.type as any,
         label: e.label || undefined,
         sessionId: e.session_id,
-        timestamp: e.created_at
+        timestamp: e.created_at,
+        abVariant: e.ab_variant || 'A'
       };
     });
 

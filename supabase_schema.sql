@@ -21,3 +21,5 @@ CREATE TABLE analytics_events (
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users see own projects" ON projects
   FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS ab_variant TEXT DEFAULT 'A';

@@ -3,7 +3,7 @@ import { FlowContext } from '@/context/FlowContext';
 import { ChatMessage, Flow, FlowBlock, ButtonOption } from '@/types/flow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, RotateCcw, Bot, Smile, Play, ArrowLeft, Phone, Video, PlusCircle, Camera } from 'lucide-react';
+import { Send, RotateCcw, Bot, Smile, Play, ArrowLeft, Phone, Video, PlusCircle, Camera, Mic, Image, MessageCircle, Plus, Search } from 'lucide-react';
 import { unlockAudio, playMessageSound } from '@/lib/messageSound';
 import { v4 as uuid } from 'uuid';
 import { AnimatePresence } from 'framer-motion';
@@ -85,7 +85,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
   }, []);
 
   const addMessage = useCallback((msg: Omit<ChatMessage, 'id'>) => {
-    const newMsg = { ...msg, id: uuid() };
+    const newMsg = { ...msg, id: uuid(), timestamp: Date.now() };
     setMessages(prev => {
       const next = [...prev, newMsg];
       messagesRef.current = next;
@@ -695,20 +695,69 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
             )}
             <AnimatePresence mode="popLayout">
               {messages.map((msg, index) => {
+                const prevMsg = messages[index - 1];
                 const nextMsg = messages[index + 1];
                 const isLastInGroup = !nextMsg || nextMsg.type !== msg.type;
                 
+                let showSeparator = false;
+                if (flow.theme === 'instagram' && msg.timestamp) {
+                  if (!prevMsg) {
+                    showSeparator = true;
+                  } else if (prevMsg.timestamp) {
+                    const diff = msg.timestamp - prevMsg.timestamp;
+                    const msgDate = new Date(msg.timestamp);
+                    const prevDate = new Date(prevMsg.timestamp);
+                    if (diff > 1000 * 60 * 60 || msgDate.getDate() !== prevDate.getDate() || msgDate.getMonth() !== prevDate.getMonth()) {
+                      showSeparator = true;
+                    }
+                  }
+                }
+
+                const formatSeparator = (date: Date) => {
+                  const now = new Date();
+                  const diff = now.getTime() - date.getTime();
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  
+                  if (days === 0) return `HOJE, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+                  if (days === 1) return `ONTEM, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+                  
+                  const weekdays = ['DOM.','SEG.','TER.','QUA.','QUI.','SEX.','SÁB.'];
+                  if (days < 7) return `${weekdays[date.getDay()]}, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+                  
+                  return date.toLocaleDateString('pt-BR', {
+                    day:'2-digit', month:'short'
+                  }).toUpperCase() + `, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+                };
+
                 return (
-                  <MessageBubble
-                    key={msg.id}
-                    msg={msg}
-                    buttonsActive={buttonsBlockId !== null}
-                    onButtonClick={handleButtonClick}
-                    userReplied={userReplied}
-                    theme={flow.theme}
-                    isLastInGroup={isLastInGroup}
-                    avatarUrl={flow.avatarUrl}
-                  />
+                  <React.Fragment key={msg.id}>
+                    {showSeparator && msg.timestamp && (
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        margin: '12px 0',
+                      }}>
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#8E93A1',
+                          fontWeight: 500,
+                          letterSpacing: '0.3px',
+                        }}>
+                          {formatSeparator(new Date(msg.timestamp))}
+                        </span>
+                      </div>
+                    )}
+                    <MessageBubble
+                      msg={msg}
+                      buttonsActive={buttonsBlockId !== null}
+                      onButtonClick={handleButtonClick}
+                      userReplied={userReplied}
+                      theme={flow.theme}
+                      isLastInGroup={isLastInGroup}
+                      avatarUrl={flow.avatarUrl}
+                    />
+                  </React.Fragment>
                 );
               })}
               {isTyping && <TypingIndicator key="typing" />}
@@ -722,66 +771,99 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
           >
             <form
               onSubmit={e => { e.preventDefault(); handleInputSubmit(); }}
-              className="flex items-center gap-2"
+              className={`flex items-center ${flow.theme === 'instagram' ? '' : 'gap-2'}`}
             >
-              <div
-                className={`flex-1 flex items-center rounded-full px-4 py-1 ${isMessagingTheme ? '' : 'bg-[var(--input-bg)]'}`}
-                style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
-              >
-                {flow.theme === 'instagram' ? (
-                  !inputEnabled && (
-                    <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-1">
-                      <Camera className="w-[20px] h-[20px] text-[#8E8E93]" />
-                    </div>
-                  )
-                ) : isMessagingTheme ? (
-                  <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-2">
-                    <Camera className="w-[22px] h-[22px] text-[#8D2EF2]" />
-                  </div>
-                ) : (
-                  <Smile className="w-5 h-5 text-muted-foreground/40 shrink-0 mr-2" />
-                )}
-                <Input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  disabled={!inputEnabled || isSubmitting}
-                  placeholder={
-                    inputEnabled
-                      ? (currentInputBlock?.placeholder || (isMessagingTheme ? 'Mensagem...' : 'Digite sua resposta...'))
-                      : (isMessagingTheme ? 'Mensagem...' : 'Aguardando...')
-                  }
-                  className={`flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[var(--text-primary)] disabled:opacity-30 px-0 ${isMessagingTheme ? 'placeholder:text-[#737373]' : 'placeholder:text-muted-foreground/50'}`}
-                />
-              </div>
-
               {flow.theme === 'instagram' ? (
-                <div 
-                  style={{
-                    width: '36px', height: '36px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)',
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', flexShrink: 0,
-                    cursor: inputEnabled ? 'pointer' : 'default',
-                    opacity: inputEnabled ? 1 : 0.5
-                  }} 
-                  onClick={inputEnabled ? handleInputSubmit : undefined}
-                >
-                  {inputEnabled 
-                    ? <Send size={16} color="white" />
-                    : <Camera size={16} color="white" />
-                  }
+                <div style={{
+                  borderRadius: '28px',
+                  background: 'rgba(24,26,34,0.88)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  padding: '6px 8px',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  width: '100%'
+                }}>
+                  {inputEnabled ? (
+                    <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0">
+                      <Search size={18} color="#F3F3F5" />
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'linear-gradient(180deg, #8D2EF2 0%, #6F47F7 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                    }}>
+                      <Camera size={18} color="#F4F4F7" />
+                    </div>
+                  )}
+
+                  <Input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    disabled={!inputEnabled || isSubmitting}
+                    placeholder={
+                      inputEnabled
+                        ? (currentInputBlock?.placeholder || 'Mensagem...')
+                        : 'Aguardando...'
+                    }
+                    className="flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[#F5F5F7] disabled:opacity-30 px-0 placeholder:text-[#A9A9B2]"
+                    style={{ caretColor: '#8A47FF' }}
+                  />
+
+                  {inputEnabled ? (
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: 'linear-gradient(180deg, #7A4CFA 0%, #6F47F7 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      cursor: 'pointer'
+                    }} onClick={handleInputSubmit}>
+                      <Send size={16} color="#F5F5F7" />
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px' }}>
+                      <Mic size={22} color="#F3F3F5" />
+                      <Image size={22} color="#F3F3F5" />
+                      <MessageCircle size={22} color="#F3F3F5" />
+                      <Plus size={22} color="#F3F3F5" />
+                    </div>
+                  )}
                 </div>
               ) : (
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
-                  className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+                <>
+                  <div
+                    className={`flex-1 flex items-center rounded-full px-4 py-1 ${isMessagingTheme ? '' : 'bg-[var(--input-bg)]'}`}
+                    style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
+                  >
+                    {isMessagingTheme ? (
+                      <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-2">
+                        <Camera className="w-[22px] h-[22px] text-[#8D2EF2]" />
+                      </div>
+                    ) : (
+                      <Smile className="w-5 h-5 text-muted-foreground/40 shrink-0 mr-2" />
+                    )}
+                    <Input
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={e => setInputValue(e.target.value)}
+                      disabled={!inputEnabled || isSubmitting}
+                      placeholder={
+                        inputEnabled
+                          ? (currentInputBlock?.placeholder || (isMessagingTheme ? 'Mensagem...' : 'Digite sua resposta...'))
+                          : (isMessagingTheme ? 'Mensagem...' : 'Aguardando...')
+                      }
+                      className={`flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[var(--text-primary)] disabled:opacity-30 px-0 ${isMessagingTheme ? 'placeholder:text-[#737373]' : 'placeholder:text-muted-foreground/50'}`}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
+                    className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </>
               )}
             </form>
           </div>

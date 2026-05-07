@@ -240,4 +240,5 @@
   --color-border: rgba(255,255,255,0.08);
   --theme-primary: #8D2EF2;
   --theme-primary-gradient: linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%);
+  --caret-color: #8A47FF;
 }

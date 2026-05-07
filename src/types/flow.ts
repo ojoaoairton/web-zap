@@ -92,4 +92,5 @@ export interface ChatMessage {
   forwarded?: boolean;
   fileName?: string;
   fileSize?: string;
+  timestamp?: number;
 }

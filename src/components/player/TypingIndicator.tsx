@@ -11,9 +11,9 @@ const TypingIndicator = React.forwardRef<HTMLDivElement>((_, ref) => (
   >
     <div className="bg-[var(--bubble-received)] rounded-lg rounded-tl-sm px-3 py-2.5 shadow-sm">
       <div className="flex gap-1">
-        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 typing-dot" />
-        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 typing-dot" />
-        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 typing-dot" />
+        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: 'var(--theme-primary)' }} />
+        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: 'var(--theme-primary)' }} />
+        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: 'var(--theme-primary)' }} />
       </div>
     </div>
   </motion.div>

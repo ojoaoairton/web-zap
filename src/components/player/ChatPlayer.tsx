@@ -621,7 +621,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
               <h3 className={`text-sm leading-tight text-[var(--text-primary)] truncate ${isMessagingTheme ? 'font-bold' : 'font-semibold'}`}>{flow.contactName || flow.name}</h3>
               <img src={seloVerificado} alt="Verificado" className="w-[14px] h-[14px] shrink-0" />
             </div>
-            <p className={`text-[12px] leading-tight mt-0.5 truncate ${isMessagingTheme ? 'text-[var(--text-secondary)] font-medium' : 'text-primary/80'}`}>
+            <p className={`text-[12px] leading-tight mt-0.5 truncate ${isMessagingTheme ? 'font-medium' : ''}`} style={{ color: isMessagingTheme ? 'var(--text-secondary)' : 'var(--theme-primary)' }}>
               {isTyping ? 'digitando...' : isRunning ? (isMessagingTheme ? 'Online agora' : 'online') : (isMessagingTheme ? 'Online agora' : 'offline')}
             </p>
           </div>
@@ -796,8 +796,9 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }}
               />
             ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'hsl(var(--primary) / 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Bot size={36} style={{ color: 'hsl(var(--primary))' }} />
+              <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--theme-primary)', opacity: 0.15 }} />
+                <Bot size={36} style={{ color: 'var(--theme-primary)', position: 'relative', zIndex: 1 }} />
               </div>
             )}
 
@@ -805,7 +806,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
               {flow.contactName || flow.name}
             </span>
 
-                <Button type="button" onClick={startChat} className="rounded-full w-14 h-14 p-0 bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button type="button" onClick={startChat} className="rounded-full w-14 h-14 p-0 text-white hover:opacity-90" style={{ background: 'var(--theme-primary)' }}>
                   <Play className="w-5 h-5" />
                 </Button>
 
@@ -840,7 +841,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
               Deseja continuar de onde parou?
             </p>
             <button onClick={handleContinue} style={{
-              background: '#25D366', color: 'white',
+              background: 'var(--theme-primary-gradient)', color: 'white',
               border: 'none', borderRadius: '50px',
               padding: '12px 24px', fontSize: '14px',
               fontWeight: 600, cursor: 'pointer'

@@ -168,6 +168,8 @@
   --commercial-bg: rgba(11,20,26,0.45);
   --audio-wave-unplayed: rgba(255,255,255,0.35);
   --audio-wave-played: rgba(255,255,255,0.85);
+  --theme-primary: #25D366;
+  --theme-primary-gradient: #25D366;
 }
 
 @media (prefers-color-scheme: light) {
@@ -184,6 +186,8 @@
     --commercial-bg: rgba(255,255,255,0.75);
     --audio-wave-unplayed: rgba(0,0,0,0.35);
     --audio-wave-played: rgba(0,0,0,0.75);
+    --theme-primary: #25D366;
+    --theme-primary-gradient: #25D366;
   }
 }
 
@@ -200,6 +204,8 @@
   --commercial-bg: rgba(11,20,26,0.45);
   --audio-wave-unplayed: rgba(255,255,255,0.35);
   --audio-wave-played: rgba(255,255,255,0.85);
+  --theme-primary: #25D366;
+  --theme-primary-gradient: #25D366;
 }
 
 .chat-theme[data-theme="light"] {
@@ -215,6 +221,8 @@
   --commercial-bg: rgba(255,255,255,0.75);
   --audio-wave-unplayed: rgba(0,0,0,0.35);
   --audio-wave-played: rgba(0,0,0,0.75);
+  --theme-primary: #25D366;
+  --theme-primary-gradient: #25D366;
 }
 
 .chat-theme[data-theme="instagram"] {
@@ -230,4 +238,6 @@
   --audio-wave-played: rgba(255,255,255,0.75);
   --commercial-bg: rgba(255,255,255,0.06);
   --color-border: rgba(255,255,255,0.08);
+  --theme-primary: #8D2EF2;
+  --theme-primary-gradient: linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%);
 }

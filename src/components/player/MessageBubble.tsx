@@ -40,11 +40,9 @@ function parseWhatsAppMarkdown(text: string): React.ReactNode {
 const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied, theme, isLastInGroup, avatarUrl }, ref) => {
   const isInstagram = theme === 'instagram';
   const isUser = msg.type === 'user';
-
-  // Instagram DM uses specific border-radius: 18px on most corners,
-  // 4px on the tail corner (bottom-right for sent, bottom-left for received)
-  const igSentRadius = '18px 18px 4px 18px';
-  const igReceivedRadius = '18px 18px 18px 4px';
+  const showTail = theme !== 'instagram' && theme !== 'messenger';
+  const igSentRadius = '18px';
+  const igReceivedRadius = '18px';
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -161,7 +159,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] shadow-sm relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
         >
-          {!isInstagram && (
+          {showTail && (
             <div
               aria-hidden
               style={{
@@ -200,7 +198,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                   onClick={() => buttonsActive && onButtonClick(btn)}
                   disabled={!buttonsActive}
                   className={`w-full px-3 py-2 bg-transparent text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-75 ${
-                    isInstagram ? 'text-[var(--ig-button-text,#833ab4)]' : 'text-[#25D366]'
+                    isInstagram ? 'text-[#3797f0]' : 'text-[#25D366]'
                   } ${
                     idx === 0 ? '' : 'border-t'
                   }`}
@@ -234,7 +232,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           className={`max-w-[80%] bg-[var(--bubble-received)] shadow-sm px-3 py-2 relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
         >
-          {!isInstagram && (
+          {showTail && (
             <div
               aria-hidden
               style={{
@@ -270,7 +268,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] overflow-visible relative ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
         >
-          {!isInstagram && (
+          {showTail && (
             <div
               aria-hidden
               style={{
@@ -332,8 +330,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
             avatarUrl ? (
               <img src={avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover" />
             ) : (
-              <div className="w-full h-full rounded-full bg-[#262626] flex items-center justify-center">
-                <Bot size={16} className="text-[#A855F7]" />
+              <div className="w-full h-full rounded-full bg-[#efefef] flex items-center justify-center">
+                <Bot size={16} className="text-[#737373]" />
               </div>
             )
           )}
@@ -355,7 +353,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           ...(isInstagram ? { borderRadius: isUser ? igSentRadius : igReceivedRadius } : {}),
         }}
       >
-        {!isInstagram && (
+        {showTail && (
           <div
             aria-hidden
             style={

@@ -92,8 +92,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       return next;
     });
     // Instagram DM não tem som de notificação
-    if (msg.type === 'bot' && msg.messageType !== 'recording' && flow.theme !== 'instagram') {
-      playMessageSound();
+    if (msg.type === 'bot' && msg.messageType !== 'recording') {
+      playMessageSound(flow.theme);
     }
     return newMsg;
   }, [flow.theme]);
@@ -586,9 +586,18 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  padding: '2px',
-                  background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
-                  flexShrink: 0
+                  border: '2px solid transparent',
+                  backgroundImage: flow.theme === 'instagram'
+                    ? 'linear-gradient(white,white), linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)'
+                    : 'none',
+                  backgroundOrigin: 'border-box',
+                  backgroundClip: flow.theme === 'instagram' 
+                    ? 'padding-box, border-box' 
+                    : 'border-box',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 <img src={flow.avatarUrl} alt="avatar" style={{
@@ -596,7 +605,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   height: '100%',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '2px solid var(--header-bg)',
+                  border: flow.theme === 'instagram' ? '2px solid white' : 'none',
                 }} />
               </div>
             ) : (
@@ -648,8 +657,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                     style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px' }}
                   />
                 ) : (
-                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                    <Bot size={40} style={{ color: '#A855F7' }} />
+                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: '#efefef', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <Bot size={40} style={{ color: '#737373' }} />
                   </div>
                 )}
                 
@@ -720,7 +729,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
               >
                 {isMessagingTheme ? (
-                  <div className="w-8 h-8 rounded-full bg-[var(--ig-accent)] flex items-center justify-center shrink-0 mr-2">
+                  <div className="w-8 h-8 rounded-full bg-[#3797f0] flex items-center justify-center shrink-0 mr-2">
                     <Camera className="w-[18px] h-[18px] text-white" />
                   </div>
                 ) : (
@@ -743,7 +752,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 type="submit"
                 size="icon"
                 disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
-                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'bg-[var(--ig-accent)] text-white hover:bg-[var(--ig-accent)]/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'bg-[#3797f0] text-white hover:bg-[#3797f0]/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
               >
                 <Send className="w-4 h-4" />
               </Button>

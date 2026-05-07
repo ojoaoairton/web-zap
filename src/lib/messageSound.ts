@@ -22,7 +22,8 @@ export function unlockAudio(): void {
   a.play().then(() => { a.pause(); a.volume = 0.3; }).catch(() => {});
 }
 
-export function playMessageSound(): void {
+export function playMessageSound(theme?: string): void {
+  if (theme === 'instagram' || theme === 'messenger') return;
   if (!unlocked) return;
   const now = Date.now();
   if (now - lastPlayTime < COOLDOWN_MS) return;

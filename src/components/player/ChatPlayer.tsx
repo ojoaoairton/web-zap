@@ -605,7 +605,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   height: '100%',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: flow.theme === 'instagram' ? '2px solid white' : 'none',
+                  border: flow.theme === 'instagram' ? '2px solid var(--header-bg)' : 'none',
                 }} />
               </div>
             ) : (
@@ -657,8 +657,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                     style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px' }}
                   />
                 ) : (
-                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: '#efefef', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                    <Bot size={40} style={{ color: '#737373' }} />
+                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: 'var(--input-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <Bot size={40} style={{ color: 'var(--text-secondary)' }} />
                   </div>
                 )}
                 
@@ -728,7 +728,13 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 className={`flex-1 flex items-center rounded-full px-4 py-1 ${isMessagingTheme ? '' : 'bg-[var(--input-bg)]'}`}
                 style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
               >
-                {isMessagingTheme ? (
+                {flow.theme === 'instagram' ? (
+                  !inputEnabled && (
+                    <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-1">
+                      <Camera className="w-[20px] h-[20px] text-[#8E8E93]" />
+                    </div>
+                  )
+                ) : isMessagingTheme ? (
                   <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-2">
                     <Camera className="w-[22px] h-[22px] text-[#8D2EF2]" />
                   </div>
@@ -748,19 +754,35 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   className={`flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[var(--text-primary)] disabled:opacity-30 px-0 ${isMessagingTheme ? 'placeholder:text-[#737373]' : 'placeholder:text-muted-foreground/50'}`}
                 />
               </div>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
-                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-                style={
-                  flow.theme === 'instagram' && inputEnabled && inputValue.trim()
-                    ? { background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)', borderRadius: '50%' }
-                    : undefined
-                }
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+
+              {flow.theme === 'instagram' ? (
+                <div 
+                  style={{
+                    width: '36px', height: '36px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)',
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', flexShrink: 0,
+                    cursor: inputEnabled ? 'pointer' : 'default',
+                    opacity: inputEnabled ? 1 : 0.5
+                  }} 
+                  onClick={inputEnabled ? handleInputSubmit : undefined}
+                >
+                  {inputEnabled 
+                    ? <Send size={16} color="white" />
+                    : <Camera size={16} color="white" />
+                  }
+                </div>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
+                  className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              )}
             </form>
           </div>
         </>

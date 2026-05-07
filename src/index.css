@@ -218,20 +218,16 @@
 }
 
 .chat-theme[data-theme="instagram"] {
-  --bg-overlay: rgba(255,255,255,1);
-  --bubble-received: #efefef;
-  --bubble-sent: #8A35F5;
-  --bubble-sent-gradient: linear-gradient(
-    180deg, 
-    #8D2EF2 0%, 
-    #5B55F5 100%
-  );
-  --text-primary: #111111;
-  --text-secondary: #737373;
-  --header-bg: #ffffff;
-  --input-bg: #efefef;
-  --audio-wave-unplayed: rgba(0,0,0,0.25);
-  --audio-wave-played: rgba(0,0,0,0.7);
-  --commercial-bg: rgba(0,0,0,0.06);
-  --color-border: rgba(0,0,0,0.1);
+  --bg-overlay: rgba(1,5,15,1);
+  --bubble-received: #262A33;
+  --bubble-sent: #8D2EF2;
+  --bubble-sent-gradient: linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%);
+  --text-primary: #F1F1F3;
+  --text-secondary: #8E8E93;
+  --header-bg: #01050F;
+  --input-bg: #262A33;
+  --audio-wave-unplayed: rgba(255,255,255,0.25);
+  --audio-wave-played: rgba(255,255,255,0.75);
+  --commercial-bg: rgba(255,255,255,0.06);
+  --color-border: rgba(255,255,255,0.08);
 }

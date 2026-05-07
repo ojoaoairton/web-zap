@@ -135,7 +135,7 @@ const SettingsPanel: React.FC<Props> = ({ flow, onClose, onSave }) => {
                   <SelectItem value="auto">Auto (sistema)</SelectItem>
                   <SelectItem value="dark">Dark (WhatsApp)</SelectItem>
                   <SelectItem value="light">Light (WhatsApp)</SelectItem>
-                  <SelectItem value="instagram">Instagram DM</SelectItem>
+                  <SelectItem value="instagram">Instagram DM (Dark)</SelectItem>
                   <SelectItem value="messenger" disabled>Messenger (em breve)</SelectItem>
                 </SelectContent>
               </Select>

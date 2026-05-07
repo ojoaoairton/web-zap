@@ -729,8 +729,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 style={isMessagingTheme ? { background: 'var(--input-bg)', border: '1px solid var(--input-border, #363636)' } : undefined}
               >
                 {isMessagingTheme ? (
-                  <div className="w-8 h-8 rounded-full bg-[#3797f0] flex items-center justify-center shrink-0 mr-2">
-                    <Camera className="w-[18px] h-[18px] text-white" />
+                  <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center shrink-0 mr-2">
+                    <Camera className="w-[22px] h-[22px] text-[#8D2EF2]" />
                   </div>
                 ) : (
                   <Smile className="w-5 h-5 text-muted-foreground/40 shrink-0 mr-2" />
@@ -752,7 +752,12 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 type="submit"
                 size="icon"
                 disabled={!inputEnabled || !inputValue.trim() || isSubmitting}
-                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'bg-[#3797f0] text-white hover:bg-[#3797f0]/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                className={`disabled:opacity-30 shrink-0 rounded-full w-10 h-10 transition-shadow hover:shadow-md ${isMessagingTheme ? 'text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                style={
+                  flow.theme === 'instagram' && inputEnabled && inputValue.trim()
+                    ? { background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)', borderRadius: '50%' }
+                    : undefined
+                }
               >
                 <Send className="w-4 h-4" />
               </Button>

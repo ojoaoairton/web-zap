@@ -220,7 +220,12 @@
 .chat-theme[data-theme="instagram"] {
   --bg-overlay: rgba(255,255,255,1);
   --bubble-received: #efefef;
-  --bubble-sent: #3797f0;
+  --bubble-sent: #8A35F5;
+  --bubble-sent-gradient: linear-gradient(
+    180deg, 
+    #8D2EF2 0%, 
+    #5B55F5 100%
+  );
   --text-primary: #111111;
   --text-secondary: #737373;
   --header-bg: #ffffff;

@@ -351,6 +351,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         style={{
           ...(msg.messageType === 'audio' ? { minWidth: '280px', overflow: 'visible' } : { overflow: 'visible' }),
           ...(isInstagram ? { borderRadius: isUser ? igSentRadius : igReceivedRadius } : {}),
+          ...(isInstagram && isUser ? { background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)', color: '#ffffff' } : {}),
         }}
       >
         {showTail && (

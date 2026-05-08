@@ -43,6 +43,41 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
   const showTail = theme !== 'instagram' && theme !== 'messenger';
   const igSentRadius = '18px';
   const igReceivedRadius = '18px';
+  const showAvatar = theme === 'instagram' && msg.type === 'bot';
+
+  const renderAvatar = () => {
+    if (!showAvatar) return null;
+    return (
+      <div style={{ flexShrink: 0, marginBottom: '2px' }}>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt="avatar"
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              objectFit: 'cover'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            color: 'white'
+          }}>
+            🤖
+          </div>
+        )}
+      </div>
+    );
+  };
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -154,7 +189,9 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
+        style={showAvatar ? { display: 'flex', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-start' } : undefined}
       >
+        {renderAvatar()}
         <div
           className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] shadow-sm relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
@@ -227,7 +264,9 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
+        style={showAvatar ? { display: 'flex', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-start' } : undefined}
       >
+        {renderAvatar()}
         <div
           className={`max-w-[80%] bg-[var(--bubble-received)] shadow-sm px-3 py-2 relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
@@ -263,7 +302,9 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex justify-start"
+        style={showAvatar ? { display: 'flex', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-start' } : undefined}
       >
+        {renderAvatar()}
         <div
           className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] overflow-visible relative ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
           style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
@@ -322,21 +363,9 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
+      style={showAvatar ? { display: 'flex', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-start' } : undefined}
     >
-      {/* Bot tiny avatar for Instagram */}
-      {isInstagram && !isUser && (
-        <div className="w-[28px] h-[28px] shrink-0 mr-2 self-end mb-[2px]">
-          {isLastInGroup && (
-            avatarUrl ? (
-              <img src={avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <div className="w-full h-full rounded-full bg-[#efefef] flex items-center justify-center">
-                <Bot size={16} className="text-[#737373]" />
-              </div>
-            )
-          )}
-        </div>
-      )}
+      {renderAvatar()}
 
       <div
         className={`max-w-[80%] px-3 py-2 text-[14.5px] leading-[19px] shadow-sm relative ${

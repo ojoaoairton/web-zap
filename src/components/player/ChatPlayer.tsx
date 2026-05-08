@@ -760,7 +760,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   </React.Fragment>
                 );
               })}
-              {isTyping && <TypingIndicator key="typing" />}
+              {isTyping && <TypingIndicator key="typing" theme={flow.theme} avatarUrl={flow.avatarUrl} />}
             </AnimatePresence>
           </div>
 

@@ -226,8 +226,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           )}
           {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
             <div style={{
-              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
-              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+              position: 'absolute', left: '-4px', bottom: '6px', width: '8px', height: '8px',
+              background: 'var(--bubble-received)', borderBottomRightRadius: '6px', boxShadow: '-2px 2px 0 -1px var(--bg-overlay)'
             }}/>
           )}
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
@@ -307,8 +307,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           )}
           {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
             <div style={{
-              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
-              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+              position: 'absolute', left: '-4px', bottom: '6px', width: '8px', height: '8px',
+              background: 'var(--bubble-received)', borderBottomRightRadius: '6px', boxShadow: '-2px 2px 0 -1px var(--bg-overlay)'
             }}/>
           )}
           <div className="flex items-center gap-2 text-[#25D366] text-sm font-medium">
@@ -351,8 +351,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
           )}
           {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
             <div style={{
-              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
-              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+              position: 'absolute', left: '-4px', bottom: '6px', width: '8px', height: '8px',
+              background: 'var(--bubble-received)', borderBottomRightRadius: '6px', boxShadow: '-2px 2px 0 -1px var(--bg-overlay)'
             }}/>
           )}
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
@@ -443,8 +443,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         )}
         {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
           <div style={{
-            position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
-            background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+            position: 'absolute', left: '-4px', bottom: '6px', width: '8px', height: '8px',
+            background: 'var(--bubble-received)', borderBottomRightRadius: '6px', boxShadow: '-2px 2px 0 -1px var(--bg-overlay)'
           }}/>
         )}
         {msg.messageType === 'text' && (

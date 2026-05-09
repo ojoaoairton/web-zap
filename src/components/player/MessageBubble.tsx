@@ -224,12 +224,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
               }}
             />
           )}
-          {position === 'last' && theme === 'instagram' && msg.type === 'bot' && (
-            <div style={{
-              position: 'absolute', left: '-6px', bottom: '8px', width: 0, height: 0,
-              borderTop: '6px solid transparent', borderBottom: '0px solid transparent', borderRight: '6px solid var(--bubble-received)'
-            }}/>
-          )}
+
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2 text-[14.5px] leading-[19px]">
               {msg.content && (
@@ -305,12 +300,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
               }}
             />
           )}
-          {position === 'last' && theme === 'instagram' && msg.type === 'bot' && (
-            <div style={{
-              position: 'absolute', left: '-6px', bottom: '8px', width: 0, height: 0,
-              borderTop: '6px solid transparent', borderBottom: '0px solid transparent', borderRight: '6px solid var(--bubble-received)'
-            }}/>
-          )}
+
           <div className="flex items-center gap-2 text-[#25D366] text-sm font-medium">
             <Mic size={14} />
             <span>{msg.content}</span>
@@ -349,12 +339,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
               }}
             />
           )}
-          {position === 'last' && theme === 'instagram' && msg.type === 'bot' && (
-            <div style={{
-              position: 'absolute', left: '-6px', bottom: '8px', width: 0, height: 0,
-              borderTop: '6px solid transparent', borderBottom: '0px solid transparent', borderRight: '6px solid var(--bubble-received)'
-            }}/>
-          )}
+
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2">
             <div className="flex items-start gap-2">
@@ -441,12 +426,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
             }
           />
         )}
-        {position === 'last' && theme === 'instagram' && msg.type === 'bot' && (
-          <div style={{
-            position: 'absolute', left: '-6px', bottom: '8px', width: 0, height: 0,
-            borderTop: '6px solid transparent', borderBottom: '0px solid transparent', borderRight: '6px solid var(--bubble-received)'
-          }}/>
-        )}
+
         {msg.messageType === 'text' && (
           <p className="whitespace-pre-wrap break-words py-0.5">
             {parseWhatsAppMarkdown(msg.content || '')}

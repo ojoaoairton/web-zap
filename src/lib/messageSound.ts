@@ -14,7 +14,8 @@ function getAudio(): HTMLAudioElement {
   return audio;
 }
 
-export function unlockAudio(): void {
+export function unlockAudio(theme?: string): void {
+  if (theme === 'instagram' || theme === 'messenger') return;
   if (unlocked) return;
   unlocked = true;
   const a = getAudio();

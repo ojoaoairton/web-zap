@@ -588,7 +588,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         backgroundPosition: isMessagingTheme ? undefined : 'top left',
         color: 'var(--text-primary)',
       }}
-      onClick={() => unlockAudio()}
+      onClick={() => unlockAudio(flow.theme)}
     >
         {/* Header */}
       <div className={`sticky top-0 z-[60] bg-[var(--header-bg)] border-b px-4 py-2.5 flex items-center justify-between shrink-0 ${isMessagingTheme ? 'border-[var(--color-border)]' : 'border-border/50'}`}>
@@ -638,7 +638,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
               <h3 className={`text-sm leading-tight text-[var(--text-primary)] truncate ${isMessagingTheme ? 'font-bold' : 'font-semibold'}`}>{flow.contactName || flow.name}</h3>
               <img src={seloVerificado} alt="Verificado" className="w-[14px] h-[14px] shrink-0" />
             </div>
-            <p className={`text-[12px] leading-tight mt-0.5 truncate ${isMessagingTheme ? 'font-medium' : ''}`} style={{ color: isMessagingTheme ? 'var(--text-secondary)' : 'var(--theme-primary)' }}>
+            <p className={`text-[12px] leading-tight mt-0.5 truncate ${isMessagingTheme ? 'font-medium' : ''}`} style={{ color: flow.theme === 'instagram' && isTyping ? '#8D2EF2' : (isMessagingTheme ? 'var(--text-secondary)' : 'var(--theme-primary)') }}>
               {isTyping ? 'digitando...' : isRunning ? (isMessagingTheme ? 'Online agora' : 'online') : (isMessagingTheme ? 'Online agora' : 'offline')}
             </p>
           </div>
@@ -662,6 +662,24 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
       {(!isPreview || chatStarted) ? (
         <>
+          {flow.theme === 'instagram' && (
+            <div style={{
+              background: 'rgba(255,255,255,0.04)',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              padding: '8px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              color: '#8E93A1',
+              flexShrink: 0
+            }}>
+              <span>Você abriu esta conversa por meio de anúncio.</span>
+              <span style={{ color: '#3EA6FF', cursor: 'pointer' }}>
+                Ver mais
+              </span>
+            </div>
+          )}
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-2">
             {/* Business account banner or Profile Intro */}
@@ -830,7 +848,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                         : 'Aguardando...'
                     }
                     className="flex-1 bg-transparent border-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm text-[#F5F5F7] disabled:opacity-30 px-0 placeholder:text-[#A9A9B2]"
-                    style={{ caretColor: '#8A47FF' }}
+                    style={{ caretColor: '#8A47FF', fontSize: flow.theme === 'instagram' ? '16px' : undefined }}
                   />
 
                   {inputEnabled ? (
@@ -843,11 +861,11 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                       <Send size={16} color="#F5F5F7" />
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px' }}>
-                      <Mic size={22} color="#F3F3F5" />
-                      <Image size={22} color="#F3F3F5" />
-                      <MessageCircle size={22} color="#F3F3F5" />
-                      <Plus size={22} color="#F3F3F5" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', flexShrink: 0, overflow: 'visible' }}>
+                      <Mic size={22} color="#F3F3F5" style={{ flexShrink: 0, minWidth: '22px' }} />
+                      <Image size={22} color="#F3F3F5" style={{ flexShrink: 0, minWidth: '22px' }} />
+                      <MessageCircle size={22} color="#F3F3F5" style={{ flexShrink: 0, minWidth: '22px' }} />
+                      <Plus size={22} color="#F3F3F5" style={{ flexShrink: 0, minWidth: '22px' }} />
                     </div>
                   )}
                 </div>

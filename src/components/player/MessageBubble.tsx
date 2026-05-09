@@ -11,6 +11,7 @@ interface MessageBubbleProps {
   theme?: string;
   isLastInGroup?: boolean;
   avatarUrl?: string;
+  position?: 'single' | 'first' | 'middle' | 'last';
 }
 
 /** Detect if a video URL is YouTube or Google Drive embed */
@@ -37,43 +38,56 @@ function parseWhatsAppMarkdown(text: string): React.ReactNode {
   });
 }
 
-const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied, theme, isLastInGroup, avatarUrl }, ref) => {
+const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ msg, buttonsActive, onButtonClick, userReplied, theme, isLastInGroup, avatarUrl, position }, ref) => {
   const isInstagram = theme === 'instagram';
   const isUser = msg.type === 'user';
   const showTail = theme !== 'instagram' && theme !== 'messenger';
   const igSentRadius = '18px';
-  const igReceivedRadius = '18px';
+
+  const getBorderRadius = () => {
+    if (theme !== 'instagram' || msg.type !== 'bot') return '18px';
+    switch(position) {
+      case 'first': return '18px 18px 18px 4px';
+      case 'middle': return '4px 18px 18px 4px';
+      case 'last': return '4px 18px 18px 18px';
+      default: return '18px';
+    }
+  };
+  const igReceivedRadius = getBorderRadius();
   const showAvatar = theme === 'instagram' && msg.type === 'bot';
+  const showAvatarImage = showAvatar && (position === 'single' || position === 'last');
 
   const renderAvatar = () => {
     if (!showAvatar) return null;
     return (
-      <div style={{ flexShrink: 0, marginBottom: '2px' }}>
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt="avatar"
-            style={{
+      <div style={{ flexShrink: 0, marginBottom: '2px', width: '28px' }}>
+        {showAvatarImage && (
+          avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="avatar"
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            <div style={{
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              objectFit: 'cover'
-            }}
-          />
-        ) : (
-          <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            color: 'white'
-          }}>
-            🤖
-          </div>
+              background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              color: 'white'
+            }}>
+              🤖
+            </div>
+          )
         )}
       </div>
     );
@@ -210,6 +224,12 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
               }}
             />
           )}
+          {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
+            <div style={{
+              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
+              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+            }}/>
+          )}
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2 text-[14.5px] leading-[19px]">
               {msg.content && (
@@ -235,7 +255,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                   onClick={() => buttonsActive && onButtonClick(btn)}
                   disabled={!buttonsActive}
                   className={`w-full px-3 py-2 bg-transparent text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-75 ${
-                    isInstagram ? 'text-[#3797f0]' : 'text-[#25D366]'
+                    isInstagram ? 'text-[#3EA6FF]' : 'text-[#25D366]'
                   } ${
                     idx === 0 ? '' : 'border-t'
                   }`}
@@ -285,6 +305,12 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
               }}
             />
           )}
+          {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
+            <div style={{
+              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
+              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+            }}/>
+          )}
           <div className="flex items-center gap-2 text-[#25D366] text-sm font-medium">
             <Mic size={14} />
             <span>{msg.content}</span>
@@ -322,6 +348,12 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                 borderLeft: '8px solid transparent',
               }}
             />
+          )}
+          {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
+            <div style={{
+              position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
+              background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+            }}/>
           )}
           <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
             <div className="px-3 py-2">
@@ -408,6 +440,12 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
                   }
             }
           />
+        )}
+        {(position === 'last' || position === 'single') && theme === 'instagram' && msg.type === 'bot' && (
+          <div style={{
+            position: 'absolute', left: '-6px', bottom: '0px', width: '12px', height: '12px',
+            background: 'var(--bubble-received)', borderRadius: '0 0 0 10px', clipPath: 'polygon(0 0, 100% 100%, 100% 0)'
+          }}/>
         )}
         {msg.messageType === 'text' && (
           <p className="whitespace-pre-wrap break-words py-0.5">
@@ -582,6 +620,7 @@ export default React.memo(MessageBubble, (prev, next) => {
     prev.msg === next.msg &&
     prev.buttonsActive === next.buttonsActive &&
     prev.userReplied === next.userReplied &&
-    prev.theme === next.theme
+    prev.theme === next.theme &&
+    prev.position === next.position
   );
 });

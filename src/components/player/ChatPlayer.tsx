@@ -46,6 +46,23 @@ const emptyFlow: Flow = {
   customScripts: [],
 };
 
+const getMessagePosition = (messages: ChatMessage[], index: number) => {
+  const current = messages[index];
+  const prev = messages[index - 1];
+  const next = messages[index + 1];
+  
+  if (current.type !== 'bot') return 'single';
+  
+  const prevIsBot = prev?.type === 'bot';
+  const nextIsBot = next?.type === 'bot';
+  
+  if (!prevIsBot && !nextIsBot) return 'single';
+  if (!prevIsBot && nextIsBot) return 'first';
+  if (prevIsBot && nextIsBot) return 'middle';
+  if (prevIsBot && !nextIsBot) return 'last';
+  return 'single';
+};
+
 const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) => {
   const ctx = useContext(FlowContext);
   const hasFlow = Boolean(flowProp ?? ctx?.flow);
@@ -729,6 +746,8 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   }).toUpperCase() + `, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
                 };
 
+                const position = flow.theme === 'instagram' ? getMessagePosition(messages, index) : undefined;
+
                 return (
                   <React.Fragment key={msg.id}>
                     {showSeparator && msg.timestamp && (
@@ -748,15 +767,18 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                         </span>
                       </div>
                     )}
-                    <MessageBubble
-                      msg={msg}
-                      buttonsActive={buttonsBlockId !== null}
-                      onButtonClick={handleButtonClick}
-                      userReplied={userReplied}
-                      theme={flow.theme}
-                      isLastInGroup={isLastInGroup}
-                      avatarUrl={flow.avatarUrl}
-                    />
+                    <div style={{ marginTop: (flow.theme === 'instagram' && (position === 'middle' || position === 'last') && !showSeparator) ? '2px' : undefined }}>
+                      <MessageBubble
+                        msg={msg}
+                        buttonsActive={buttonsBlockId !== null}
+                        onButtonClick={handleButtonClick}
+                        userReplied={userReplied}
+                        theme={flow.theme}
+                        isLastInGroup={isLastInGroup}
+                        avatarUrl={flow.avatarUrl}
+                        position={position}
+                      />
+                    </div>
                   </React.Fragment>
                 );
               })}

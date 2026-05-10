@@ -736,7 +736,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                     fontWeight: 500,
                     letterSpacing: '0.3px'
                   }}>
-                    {formatSeparator(new Date())}
+                    {formatSeparator(messages.length > 0 && messages[0].timestamp ? new Date(messages[0].timestamp) : new Date())}
                   </span>
                 </div>
 
@@ -785,7 +785,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                 let showSeparator = false;
                 if (flow.theme === 'instagram' && msg.timestamp) {
                   if (!prevMsg) {
-                    showSeparator = true;
+                    showSeparator = false;
                   } else if (prevMsg.timestamp) {
                     const diff = msg.timestamp - prevMsg.timestamp;
                     const msgDate = new Date(msg.timestamp);

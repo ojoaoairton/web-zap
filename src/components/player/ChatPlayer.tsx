@@ -63,6 +63,22 @@ const getMessagePosition = (messages: ChatMessage[], index: number) => {
   return 'single';
 };
 
+const formatSeparator = (date: Date) => {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) return `HOJE, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+  if (days === 1) return `ONTEM, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+  
+  const weekdays = ['DOM.','SEG.','TER.','QUA.','QUI.','SEX.','SÁB.'];
+  if (days < 7) return `${weekdays[date.getDay()]}, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+  
+  return date.toLocaleDateString('pt-BR', {
+    day:'2-digit', month:'short'
+  }).toUpperCase() + `, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+};
+
 const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) => {
   const ctx = useContext(FlowContext);
   const hasFlow = Boolean(flowProp ?? ctx?.flow);
@@ -780,21 +796,6 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
                   }
                 }
 
-                const formatSeparator = (date: Date) => {
-                  const now = new Date();
-                  const diff = now.getTime() - date.getTime();
-                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                  
-                  if (days === 0) return `HOJE, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
-                  if (days === 1) return `ONTEM, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
-                  
-                  const weekdays = ['DOM.','SEG.','TER.','QUA.','QUI.','SEX.','SÁB.'];
-                  if (days < 7) return `${weekdays[date.getDay()]}, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
-                  
-                  return date.toLocaleDateString('pt-BR', {
-                    day:'2-digit', month:'short'
-                  }).toUpperCase() + `, ${date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
-                };
 
                 const position = flow.theme === 'instagram' ? getMessagePosition(messages, index) : undefined;
 

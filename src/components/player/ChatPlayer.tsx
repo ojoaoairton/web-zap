@@ -662,56 +662,88 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
       {(!isPreview || chatStarted) ? (
         <>
-          {flow.theme === 'instagram' && (
-            <div style={{
-              background: 'rgba(255,255,255,0.04)',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-              padding: '8px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '12px',
-              color: '#8E93A1',
-              flexShrink: 0
-            }}>
-              <span>Você abriu esta conversa por meio de anúncio.</span>
-              <span style={{ color: '#3EA6FF', cursor: 'pointer' }}>
-                Ver mais
-              </span>
-            </div>
-          )}
+
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin bg-transparent px-3 py-3 space-y-2">
             {/* Business account banner or Profile Intro */}
-            {isMessagingTheme ? (
-              <div className="flex flex-col items-center mt-6 w-full max-w-[280px] mx-auto mb-10 pt-4">
-                {flow.avatarUrl ? (
-                  <img
-                    src={flow.avatarUrl}
-                    alt="avatar"
-                    style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px' }}
-                  />
-                ) : (
-                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: 'var(--input-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                    <Bot size={40} style={{ color: 'var(--text-secondary)' }} />
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-1 justify-center mb-1">
-                  <span style={{ color: 'var(--text-primary)', fontSize: '20px', fontWeight: 700 }}>
+            {flow.theme === 'instagram' ? (
+              <>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '24px 16px 16px',
+                  gap: '8px'
+                }}>
+                  {/* Foto circular */}
+                  {flow.avatarUrl ? (
+                    <img src={flow.avatarUrl} style={{
+                      width: '72px', height: '72px',
+                      borderRadius: '50%', objectFit: 'cover'
+                    }}/>
+                  ) : (
+                    <div style={{
+                      width: '72px', height: '72px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+                      display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: '28px'
+                    }}>🤖</div>
+                  )}
+
+                  {/* Nome */}
+                  <span style={{
+                    color: '#F1F1F3', fontSize: '16px',
+                    fontWeight: 600, textAlign: 'center'
+                  }}>
                     {flow.contactName || flow.name}
                   </span>
-                  <img src={seloVerificado} alt="Verificado" className="w-[18px] h-[18px]" />
+
+                  {/* Saiba mais */}
+                  <span style={{
+                    color: '#3EA6FF', fontSize: '12px',
+                    cursor: 'pointer', textAlign: 'center'
+                  }}>
+                    Saiba mais sobre as conversas comerciais
+                  </span>
                 </div>
                 
-                <span style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
-                  {flow.name.toLowerCase().replace(/[^a-z0-9]/g, '')}
-                </span>
+                {/* Separador de Data */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  margin: '8px 0'
+                }}>
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#8E93A1',
+                    fontWeight: 500,
+                    letterSpacing: '0.3px'
+                  }}>
+                    {formatSeparator(new Date())}
+                  </span>
+                </div>
 
-                <span style={{ color: '#3797f0', fontSize: '13px', textAlign: 'center', fontWeight: 500 }}>
-                  Saiba mais sobre as conversas comerciais
-                </span>
-              </div>
+                {/* Texto do Anúncio */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  padding: '0 24px'
+                }}>
+                  <span style={{
+                    fontSize: '11px',
+                    color: '#8E93A1',
+                    textAlign: 'center',
+                    lineHeight: '1.4'
+                  }}>
+                    Você abriu esta conversa por meio de um anúncio.{' '}
+                    <span style={{ color: '#3EA6FF', cursor: 'pointer' }}>
+                      Ver anúncio
+                    </span>
+                  </span>
+                </div>
+              </>
             ) : (
               <div className="flex justify-center mb-2">
                 <span

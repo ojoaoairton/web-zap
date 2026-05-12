@@ -607,7 +607,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
       onClick={() => unlockAudio(flow.theme)}
     >
         {/* Header */}
-      <div className={`sticky top-0 z-[60] bg-[var(--header-bg)] border-b px-4 py-2.5 flex items-center justify-between shrink-0 ${isMessagingTheme ? 'border-[var(--color-border)]' : 'border-border/50'}`}>
+      <div className={`sticky top-0 z-[60] bg-[var(--header-bg)] border-b px-4 py-2.5 flex items-center justify-between shrink-0 border-[var(--color-border)]`}>
         <div className="flex items-center gap-3">
           {isMessagingTheme && (
             <ArrowLeft className="w-6 h-6 text-[var(--text-primary)] shrink-0" />
@@ -839,7 +839,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
 
           {/* Input bar */}
           <div
-            className={`border-t px-2 py-2 shrink-0 ${isMessagingTheme ? '' : 'bg-[var(--header-bg)] border-border/50'}`}
+            className={`border-t px-2 py-2 shrink-0 ${isMessagingTheme ? '' : 'bg-[var(--header-bg)]'} border-[var(--color-border)]`}
             style={isMessagingTheme ? { background: 'var(--header-bg)', borderColor: 'var(--input-border, var(--color-border))' } : undefined}
           >
             <form

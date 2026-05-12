@@ -174,7 +174,7 @@
 
 @media (prefers-color-scheme: light) {
   .chat-theme:not([data-theme]) {
-    --bg-overlay: rgba(236,229,221,0.93);
+    --bg-overlay: rgba(236,229,221,0.87);
     --bg-color: #ece5dd;
     --bubble-received: #ffffff;
     --bubble-sent: #d9fdd3;
@@ -211,7 +211,7 @@
 }
 
 .chat-theme[data-theme="light"] {
-  --bg-overlay: rgba(236,229,221,0.93);
+  --bg-overlay: rgba(236,229,221,0.87);
   --bg-color: #ece5dd;
   --bubble-received: #ffffff;
   --bubble-sent: #d9fdd3;

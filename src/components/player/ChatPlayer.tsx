@@ -598,7 +598,7 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         backgroundImage: isMessagingTheme
           ? 'none'
           : `linear-gradient(var(--bg-overlay, rgba(11,20,26,0.85)), var(--bg-overlay, rgba(11,20,26,0.85))), url("${PATTERN_BASE64}")`,
-        backgroundColor: isMessagingTheme ? 'var(--bg-overlay)' : undefined,
+        backgroundColor: isMessagingTheme ? 'var(--bg-overlay)' : 'var(--bg-color, transparent)',
         backgroundRepeat: isMessagingTheme ? undefined : 'repeat',
         backgroundSize: isMessagingTheme ? undefined : '400px auto',
         backgroundPosition: isMessagingTheme ? undefined : 'top left',

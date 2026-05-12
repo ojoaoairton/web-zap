@@ -207,8 +207,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       >
         {renderAvatar()}
         <div
-          className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] shadow-sm relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
-          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+          className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : { boxShadow: 'var(--bubble-shadow, 0 1px 1px rgba(0,0,0,0.18))' }}
         >
           {showTail && (
             <div
@@ -283,8 +283,8 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       >
         {renderAvatar()}
         <div
-          className={`max-w-[80%] bg-[var(--bubble-received)] shadow-sm px-3 py-2 relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
-          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+          className={`max-w-[80%] bg-[var(--bubble-received)] px-3 py-2 relative overflow-visible ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : { boxShadow: 'var(--bubble-shadow, 0 1px 1px rgba(0,0,0,0.18))' }}
         >
           {showTail && (
             <div
@@ -323,7 +323,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         {renderAvatar()}
         <div
           className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] overflow-visible relative ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
-          style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : { boxShadow: 'var(--bubble-shadow, 0 1px 1px rgba(0,0,0,0.18))' }}
         >
           {showTail && (
             <div
@@ -385,7 +385,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       {renderAvatar()}
 
       <div
-        className={`max-w-[80%] px-3 py-2 text-[14.5px] leading-[19px] shadow-sm relative ${
+        className={`max-w-[80%] px-3 py-2 text-[14.5px] leading-[19px] relative ${
           isInstagram
             ? (isUser
                 ? 'bg-[var(--bubble-sent)] text-white mb-0'
@@ -396,7 +396,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
         }`}
         style={{
           ...(msg.messageType === 'audio' ? { minWidth: '280px', overflow: 'visible' } : { overflow: 'visible' }),
-          ...(isInstagram ? { borderRadius: isUser ? igSentRadius : igReceivedRadius } : {}),
+          ...(isInstagram ? { borderRadius: isUser ? igSentRadius : igReceivedRadius } : { boxShadow: 'var(--bubble-shadow, 0 1px 1px rgba(0,0,0,0.18))' }),
           ...(isInstagram && isUser ? { background: 'linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%)', color: '#ffffff' } : {}),
         }}
       >

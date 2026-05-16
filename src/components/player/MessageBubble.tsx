@@ -195,6 +195,36 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
     }
   }, [msg.messageType, msg.pixData?.pixKey]);
 
+  const copyTextData = useCallback(async () => {
+    if (msg.messageType !== 'copy') return;
+    const text = msg.copyData?.text || '';
+    if (!text) return;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.style.position = 'fixed';
+        el.style.left = '-9999px';
+        el.style.top = '0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      setCopied(true);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(true);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => setCopied(false), 2000);
+    }
+  }, [msg.messageType, msg.copyData?.text]);
+
   if (msg.messageType === 'buttons' && msg.buttons) {
     return (
       <motion.div
@@ -367,6 +397,81 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
             <span className="shrink-0">{copied ? <Check size={14} /> : <Copy size={14} />}</span>
             <span>{copied ? 'Copiado!' : 'Copiar chave Pix'}</span>
           </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (msg.messageType === 'copy' && msg.copyData) {
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 8, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="flex justify-start"
+        style={showAvatar ? { display: 'flex', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-start' } : undefined}
+      >
+        {renderAvatar()}
+        <div
+          className={`max-w-[80%] bg-[var(--bubble-received)] text-[var(--text-primary)] overflow-visible relative ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`}
+          style={isInstagram ? { borderRadius: igReceivedRadius } : { boxShadow: 'var(--bubble-shadow, 0 1px 1px rgba(0,0,0,0.18))' }}
+        >
+          {showTail && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '-8px',
+                width: '0',
+                height: '0',
+                borderTop: '8px solid var(--bubble-received)',
+                borderLeft: '8px solid transparent',
+              }}
+            />
+          )}
+
+          <div className={`overflow-hidden ${isInstagram ? '' : 'rounded-lg rounded-tl-sm'}`} style={isInstagram ? { borderRadius: igReceivedRadius } : undefined}>
+            <div className="px-3 py-2">
+              {msg.copyData.title && (
+                <p className="text-sm font-semibold leading-tight mb-2">
+                  {msg.copyData.title}
+                </p>
+              )}
+              
+              <p style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                letterSpacing: '1px',
+                color: 'var(--text-primary)',
+                fontFamily: 'monospace',
+                background: 'rgba(255,255,255,0.06)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                textAlign: 'center'
+              }}>
+                {msg.copyData.text}
+              </p>
+              
+              <div className="flex justify-end mt-1">
+                <span className="text-[11px] text-muted-foreground/50 leading-none inline-flex items-center gap-1">
+                  {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  {isUser && <TickIcon />}
+                </span>
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={copyTextData}
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 bg-transparent border-t text-sm font-semibold ${isInstagram ? 'text-[#3EA6FF]' : 'text-[#25D366]'}`}
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <span className="shrink-0">{copied ? <Check size={14} /> : <Copy size={14} />}</span>
+              <span>{copied ? 'Copiado!' : (msg.copyData.buttonLabel || 'Copiar')}</span>
+            </button>
           </div>
         </div>
       </motion.div>

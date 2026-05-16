@@ -363,6 +363,26 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         }
         return block.next;
       }
+      case 'copy': {
+        const isDuplicateCopy = messagesRef.current.some(m => m.type === 'bot' && m.messageType === 'copy' && m.copyData?.text === block.copyData?.text);
+        
+        if (!isDuplicateCopy) {
+          setIsTyping(true);
+          scrollToBottom();
+          await sleep(1500);
+          if (abortRef.current) return undefined;
+          setIsTyping(false);
+          addMessage({
+            type: 'bot',
+            content: '',
+            messageType: 'copy',
+            copyData: block.copyData,
+          });
+          scrollToBottom();
+          await sleep(300);
+        }
+        return block.next;
+      }
       case 'redirect': {
         addMessage({ type: 'bot', content: `🔗 Redirecionando para ${block.url}...`, messageType: 'text' });
         scrollToBottom();

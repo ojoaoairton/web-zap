@@ -14,7 +14,7 @@ import {
 import {
   Image, Video, Music, File,
   MessageSquare, LayoutList, Clock, ExternalLink,
-  Trash2, ChevronUp, ChevronDown, Plus, KeyboardIcon, CreditCard,
+  Trash2, ChevronUp, ChevronDown, Plus, KeyboardIcon, CreditCard, Copy,
 } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 
@@ -28,6 +28,7 @@ const typeLabels: Record<BlockType, { label: string; icon: React.ReactNode }> = 
     label: 'PIX',
     icon: <CreditCard size={16} />,
   },
+  copy: { label: 'Copiar Texto', icon: <Copy size={16} /> },
   buttons: { label: 'Botões', icon: <LayoutList size={16} /> },
   input: { label: 'Input', icon: <KeyboardIcon size={16} /> },
   delay: { label: 'Delay', icon: <Clock size={16} /> },
@@ -158,6 +159,32 @@ const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block: ini
               value={block.pixData?.pixKey || ''}
               onChange={e => updateBlock(block.id, { pixData: { receiverName: block.pixData?.receiverName || '', pixKey: e.target.value } })}
               placeholder="Chave PIX"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+        );
+      case 'copy':
+        return (
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground block">Título (Opcional)</label>
+            <Input
+              value={block.copyData?.title || ''}
+              onChange={e => updateBlock(block.id, { copyData: { ...block.copyData, title: e.target.value, text: block.copyData?.text || '' } })}
+              placeholder="ex: Seu cupom exclusivo 🎁"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+            />
+            <label className="text-xs text-muted-foreground block">Texto para copiar (Obrigatório)</label>
+            <Input
+              value={block.copyData?.text || ''}
+              onChange={e => updateBlock(block.id, { copyData: { ...block.copyData, text: e.target.value } })}
+              placeholder="ex: FELTRO10OFF"
+              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+            />
+            <label className="text-xs text-muted-foreground block">Label do botão (Opcional)</label>
+            <Input
+              value={block.copyData?.buttonLabel || ''}
+              onChange={e => updateBlock(block.id, { copyData: { ...block.copyData, text: block.copyData?.text || '', buttonLabel: e.target.value } })}
+              placeholder="Copiar (padrão)"
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>

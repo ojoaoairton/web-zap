@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'input' | 'delay' | 'redirect' | 'pix';
+export type BlockType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'input' | 'delay' | 'redirect' | 'pix' | 'copy';
 
 export type FlowTheme = 'auto' | 'dark' | 'light' | 'instagram' | 'messenger';
 
@@ -35,6 +35,12 @@ export interface PixData {
   pixKey: string;
 }
 
+export interface CopyData {
+  title?: string;
+  text: string;
+  buttonLabel?: string;
+}
+
 export interface FlowBlock {
   id: string;
   type: BlockType;
@@ -42,6 +48,7 @@ export interface FlowBlock {
   url?: string;
   buttons?: ButtonOption[];
   pixData?: PixData;
+  copyData?: CopyData;
   duration?: string;
   forwarded?: boolean;
   inputType?: InputFieldType;
@@ -84,9 +91,10 @@ export interface ChatMessage {
   id: string;
   type: 'bot' | 'user';
   content: string;
-  messageType: 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'pix' | 'recording' | 'typing';
+  messageType: 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'pix' | 'copy' | 'recording' | 'typing';
   buttons?: ButtonOption[];
   pixData?: PixData;
+  copyData?: CopyData;
   transcription?: string;
   duration?: string;
   forwarded?: boolean;

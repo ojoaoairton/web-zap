@@ -383,6 +383,22 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
         }
         return block.next;
       }
+      case 'carousel': {
+        setIsTyping(true);
+        scrollToBottom();
+        await sleep(1500);
+        if (abortRef.current) return undefined;
+        setIsTyping(false);
+        addMessage({
+          type: 'bot',
+          content: '',
+          messageType: 'carousel',
+          carouselData: block.carouselData,
+        });
+        scrollToBottom();
+        await sleep(400);
+        return block.next;
+      }
       case 'redirect': {
         addMessage({ type: 'bot', content: `🔗 Redirecionando para ${block.url}...`, messageType: 'text' });
         scrollToBottom();

@@ -15,6 +15,7 @@ import {
   Image, Video, Music, File,
   MessageSquare, LayoutList, Clock, ExternalLink,
   Trash2, ChevronUp, ChevronDown, Plus, KeyboardIcon, CreditCard, Copy,
+  LayoutGrid,
 } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 
@@ -29,6 +30,7 @@ const typeLabels: Record<BlockType, { label: string; icon: React.ReactNode }> = 
     icon: <CreditCard size={16} />,
   },
   copy: { label: 'Copiar Texto', icon: <Copy size={16} /> },
+  carousel: { label: 'Carrossel', icon: <LayoutGrid size={16} /> },
   buttons: { label: 'Botões', icon: <LayoutList size={16} /> },
   input: { label: 'Input', icon: <KeyboardIcon size={16} /> },
   delay: { label: 'Delay', icon: <Clock size={16} /> },
@@ -375,6 +377,143 @@ const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block: ini
             className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
           />
         );
+      case 'carousel': {
+        const cards = block.carouselData?.cards || [];
+        return (
+          <div className="space-y-4 text-left">
+            <div className="space-y-4">
+              {cards.map((card, cardIndex) => (
+                <div key={card.id} className="border border-border rounded-md p-3 bg-secondary/30 space-y-2 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-muted-foreground">Card #{cardIndex + 1}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      onClick={() => {
+                        const nextCards = cards.filter(c => c.id !== card.id);
+                        updateBlock(block.id, { carouselData: { cards: nextCards } });
+                      }}
+                      disabled={cards.length <= 1}
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="grid gap-1">
+                      <label className="text-[11px] text-muted-foreground">URL da Imagem</label>
+                      <Input
+                        value={card.imageUrl || ''}
+                        onChange={e => {
+                          const nextCards = [...cards];
+                          nextCards[cardIndex] = { ...nextCards[cardIndex], imageUrl: e.target.value };
+                          updateBlock(block.id, { carouselData: { cards: nextCards } });
+                        }}
+                        placeholder="https://exemplo.com/imagem.png"
+                        className="h-8 bg-secondary border-border text-foreground text-xs placeholder:text-muted-foreground"
+                      />
+                    </div>
+
+                    <div className="grid gap-1">
+                      <label className="text-[11px] text-muted-foreground">Título</label>
+                      <Input
+                        value={card.title || ''}
+                        onChange={e => {
+                          const nextCards = [...cards];
+                          nextCards[cardIndex] = { ...nextCards[cardIndex], title: e.target.value };
+                          updateBlock(block.id, { carouselData: { cards: nextCards } });
+                        }}
+                        placeholder="Título do card"
+                        className="h-8 bg-secondary border-border text-foreground text-xs placeholder:text-muted-foreground"
+                      />
+                    </div>
+
+                    <div className="grid gap-1">
+                      <label className="text-[11px] text-muted-foreground">Descrição</label>
+                      <Textarea
+                        value={card.description || ''}
+                        onChange={e => {
+                          const nextCards = [...cards];
+                          nextCards[cardIndex] = { ...nextCards[cardIndex], description: e.target.value };
+                          updateBlock(block.id, { carouselData: { cards: nextCards } });
+                        }}
+                        placeholder="Descrição curta..."
+                        className="bg-secondary border-border text-foreground text-xs placeholder:text-muted-foreground min-h-[48px] resize-none py-1.5"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="grid gap-1">
+                        <label className="text-[11px] text-muted-foreground">Label do botão</label>
+                        <Input
+                          value={card.buttonLabel || ''}
+                          onChange={e => {
+                            const nextCards = [...cards];
+                            nextCards[cardIndex] = { ...nextCards[cardIndex], buttonLabel: e.target.value };
+                            updateBlock(block.id, { carouselData: { cards: nextCards } });
+                          }}
+                          placeholder="ex: Saiba Mais"
+                          className="h-8 bg-secondary border-border text-foreground text-xs placeholder:text-muted-foreground"
+                        />
+                      </div>
+                      <div className="grid gap-1">
+                        <label className="text-[11px] text-muted-foreground">URL do botão</label>
+                        <Input
+                          value={card.buttonUrl || ''}
+                          onChange={e => {
+                            const nextCards = [...cards];
+                            nextCards[cardIndex] = { ...nextCards[cardIndex], buttonUrl: e.target.value };
+                            updateBlock(block.id, { carouselData: { cards: nextCards } });
+                          }}
+                          placeholder="https://..."
+                          className="h-8 bg-secondary border-border text-foreground text-xs placeholder:text-muted-foreground"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-1">
+                      <label className="text-[11px] text-muted-foreground">Abrir em</label>
+                      <Select
+                        value={card.buttonTarget || '_blank'}
+                        onValueChange={val => {
+                          const nextCards = [...cards];
+                          nextCards[cardIndex] = { ...nextCards[cardIndex], buttonTarget: val as '_blank' | '_self' };
+                          updateBlock(block.id, { carouselData: { cards: nextCards } });
+                        }}
+                      >
+                        <SelectTrigger className="h-8 bg-secondary border-border text-foreground text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_blank">Nova aba</SelectItem>
+                          <SelectItem value="_self">Mesma aba</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {cards.length < 10 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => {
+                  const nextCards = [...cards, { id: uuid() }];
+                  updateBlock(block.id, { carouselData: { cards: nextCards } });
+                }}
+                className="text-primary hover:text-primary/80"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar card
+              </Button>
+            )}
+          </div>
+        );
+      }
       default:
         return null;
     }

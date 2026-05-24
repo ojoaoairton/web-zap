@@ -98,6 +98,7 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [elapsed, setElapsed] = useState('0:00');
+  const [activeCard, setActiveCard] = useState(0);
 
   const waveform = useMemo(() => {
     if (msg.messageType !== 'audio') return [];
@@ -224,6 +225,186 @@ const MessageBubble = React.forwardRef<HTMLDivElement, MessageBubbleProps>(({ ms
       timerRef.current = window.setTimeout(() => setCopied(false), 2000);
     }
   }, [msg.messageType, msg.copyData?.text]);
+
+  if (msg.messageType === 'carousel' && msg.carouselData) {
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full text-left"
+      >
+        {/* Container deslizável */}
+        <div
+          onScroll={(e) => {
+            const container = e.currentTarget;
+            const scrollLeft = container.scrollLeft;
+            const cardWidth = 240 + 12; // width + gap
+            const activeIndex = Math.round(scrollLeft / cardWidth);
+            setActiveCard(activeIndex);
+          }}
+          style={{
+            display: 'flex',
+            overflowX: 'auto',
+            gap: '12px',
+            padding: '4px 12px 12px',
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+          className="hide-scrollbar"
+        >
+          {msg.carouselData.cards.map((card, index) => (
+            <div
+              key={card.id}
+              style={{
+                minWidth: '240px',
+                maxWidth: '240px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: 'var(--bubble-received)',
+                flexShrink: 0,
+                scrollSnapAlign: 'start',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              }}
+            >
+              {/* Imagem */}
+              {card.imageUrl && (
+                <img
+                  src={card.imageUrl}
+                  alt={card.title || `Card ${index + 1}`}
+                  style={{
+                    width: '100%',
+                    height: '160px',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              )}
+
+              {/* Conteúdo */}
+              {(card.title || card.description) && (
+                <div style={{
+                  padding: '12px 14px',
+                  background: 'var(--bubble-received)',
+                }}>
+                  {card.title && (
+                    <p style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: 'var(--text-primary)',
+                      marginBottom: '4px',
+                      lineHeight: '1.3',
+                    }}>
+                      {card.title}
+                    </p>
+                  )}
+                  {card.description && (
+                    <p style={{
+                      fontSize: '12px',
+                      color: 'var(--text-secondary)',
+                      lineHeight: '1.4',
+                    }}>
+                      {card.description}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Botão CTA */}
+              {card.buttonLabel && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (card.buttonUrl) {
+                      // Passar UTMs para o botão
+                      const currentParams = new URLSearchParams(
+                        window.location.search
+                      );
+                      const utmParams = [
+                        'utm_source','utm_medium','utm_campaign',
+                        'utm_content','utm_term','fbclid','sck','src'
+                      ];
+                      const targetUrl = new URL(card.buttonUrl);
+                      utmParams.forEach(param => {
+                        const value = currentParams.get(param);
+                        if (value) targetUrl.searchParams.set(param, value);
+                      });
+
+                      // Disparar callback de checkout se existir
+                      if (typeof window.onCheckoutClick === 'function') {
+                        window.onCheckoutClick({
+                          url: targetUrl.toString(),
+                          label: card.buttonLabel || '',
+                          fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1] || null,
+                          fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1] || null,
+                          pageUrl: window.location.href,
+                        });
+                      }
+
+                      window.open(
+                        targetUrl.toString(),
+                        card.buttonTarget || '_blank'
+                      );
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderTop: '1px solid var(--color-border)',
+                    color: theme === 'instagram' ? '#3EA6FF' : '#25D366',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  {card.buttonLabel}
+                </button>
+              )}
+            </div>
+          ))}
+
+          {/* Card fantasma para mostrar que tem mais */}
+          {msg.carouselData.cards.length > 1 && (
+            <div style={{ minWidth: '20px', flexShrink: 0 }} />
+          )}
+        </div>
+
+        {/* Indicador de dots */}
+        {msg.carouselData.cards.length > 1 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '6px',
+            paddingBottom: '4px',
+          }}>
+            {msg.carouselData.cards.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: i === activeCard
+                    ? (theme === 'instagram' ? '#3EA6FF' : '#25D366')
+                    : 'rgba(255,255,255,0.3)',
+                  transition: 'background-color 0.2s ease',
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </motion.div>
+    );
+  }
 
   if (msg.messageType === 'buttons' && msg.buttons) {
     return (

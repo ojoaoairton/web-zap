@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   CreditCard,
   Copy,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] 
     icon: <CreditCard size={16} />,
   },
   { type: 'copy', label: 'Copiar Texto', icon: <Copy size={16} /> },
+  { type: 'carousel', label: 'Carrossel', icon: <LayoutGrid size={16} /> },
   { type: 'buttons', label: 'Botões', icon: <LayoutList size={16} /> },
   { type: 'input', label: 'Input', icon: <KeyboardIcon size={16} /> },
   { type: 'delay', label: 'Delay', icon: <Clock size={16} /> },
@@ -58,6 +60,7 @@ const createDefaultBlock = (type: BlockType): FlowBlock => {
     case 'buttons': newBlock.content = ''; newBlock.buttons = []; break;
     case 'pix': newBlock.pixData = { receiverName: '', pixKey: '' }; break;
     case 'copy': newBlock.copyData = { text: '' }; break;
+    case 'carousel': newBlock.carouselData = { cards: [{ id: crypto.randomUUID() }] }; break;
     case 'input': newBlock.inputType = 'texto'; newBlock.placeholder = ''; newBlock.variable = ''; break;
     case 'delay': newBlock.delayMs = 1500; break;
     case 'redirect': newBlock.url = ''; break;

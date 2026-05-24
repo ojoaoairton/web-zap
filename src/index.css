@@ -246,3 +246,7 @@
   --theme-primary-gradient: linear-gradient(180deg, #8D2EF2 0%, #5B55F5 100%);
   --caret-color: #8A47FF;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

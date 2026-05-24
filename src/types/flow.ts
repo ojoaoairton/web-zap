@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'input' | 'delay' | 'redirect' | 'pix' | 'copy';
+export type BlockType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'input' | 'delay' | 'redirect' | 'pix' | 'copy' | 'carousel';
 
 export type FlowTheme = 'auto' | 'dark' | 'light' | 'instagram' | 'messenger';
 
@@ -41,6 +41,20 @@ export interface CopyData {
   buttonLabel?: string;
 }
 
+export interface CarouselCard {
+  id: string;
+  imageUrl?: string;
+  title?: string;
+  description?: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
+  buttonTarget?: '_blank' | '_self';
+}
+
+export interface CarouselData {
+  cards: CarouselCard[];
+}
+
 export interface FlowBlock {
   id: string;
   type: BlockType;
@@ -49,6 +63,7 @@ export interface FlowBlock {
   buttons?: ButtonOption[];
   pixData?: PixData;
   copyData?: CopyData;
+  carouselData?: CarouselData;
   duration?: string;
   forwarded?: boolean;
   inputType?: InputFieldType;
@@ -91,10 +106,11 @@ export interface ChatMessage {
   id: string;
   type: 'bot' | 'user';
   content: string;
-  messageType: 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'pix' | 'copy' | 'recording' | 'typing';
+  messageType: 'text' | 'image' | 'video' | 'audio' | 'file' | 'buttons' | 'pix' | 'copy' | 'carousel' | 'recording' | 'typing';
   buttons?: ButtonOption[];
   pixData?: PixData;
   copyData?: CopyData;
+  carouselData?: CarouselData;
   transcription?: string;
   duration?: string;
   forwarded?: boolean;

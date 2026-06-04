@@ -315,14 +315,14 @@ const BuilderPanel: React.FC = () => {
       {/* Header */}
       <div className="border-b border-border p-4 space-y-3">
         <div className="flex items-center justify-between gap-1 overflow-x-auto overflow-y-visible whitespace-nowrap relative z-50">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground shrink-0 gap-1.5 -ml-2 mr-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-muted-foreground hover:text-white shrink-0 gap-1.5 -ml-2 mr-2">
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Voltar</span>
           </Button>
           <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={newFlow} className="text-muted-foreground hover:text-foreground shrink-0">
+              <Button variant="ghost" size="icon" onClick={newFlow} className="text-muted-foreground hover:text-white shrink-0">
                 <FilePlus className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -331,7 +331,7 @@ const BuilderPanel: React.FC = () => {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={saveFlow} className="text-muted-foreground hover:text-foreground shrink-0">
+              <Button variant="ghost" size="icon" onClick={saveFlow} className="text-muted-foreground hover:text-white shrink-0">
                 {saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
@@ -345,7 +345,7 @@ const BuilderPanel: React.FC = () => {
                 size="icon"
                 onClick={triggerImport}
                 title="Importar fluxo"
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="text-muted-foreground hover:text-white shrink-0"
               >
                 <Upload className="w-4 h-4" />
               </Button>
@@ -360,7 +360,7 @@ const BuilderPanel: React.FC = () => {
                 size="icon"
                 onClick={() => window.open('/p/' + getFlowSlug(), '_blank')}
                 title="Ver página pública"
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="text-muted-foreground hover:text-white shrink-0"
               >
                 <ExternalLink className="w-4 h-4" />
               </Button>
@@ -375,7 +375,7 @@ const BuilderPanel: React.FC = () => {
                 size="icon"
                 onClick={copyPublicLink}
                 title="Copiar link público"
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="text-muted-foreground hover:text-white shrink-0"
               >
                 <Link className="w-4 h-4" />
               </Button>
@@ -389,7 +389,7 @@ const BuilderPanel: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSettingsOpen(true)}
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="text-muted-foreground hover:text-white shrink-0"
               >
                 <Settings className="w-4 h-4" />
               </Button>
@@ -397,7 +397,7 @@ const BuilderPanel: React.FC = () => {
             <TooltipContent side="bottom">Configurações</TooltipContent>
           </Tooltip>
 
-          <Button variant="ghost" size="sm" onClick={exportJSON} className="text-muted-foreground hover:text-foreground shrink-0">
+          <Button variant="ghost" size="sm" onClick={exportJSON} className="text-muted-foreground hover:text-white shrink-0">
             <Download className="w-4 h-4 mr-1.5" /> JSON
           </Button>
           </div>

@@ -317,6 +317,34 @@ const BlockEditor: React.FC<{ block: FlowBlock; index: number }> = ({ block: ini
             >
               <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar botão
             </Button>
+            <div className="space-y-1 pt-2 border-t border-border">
+              <label className="text-xs text-muted-foreground block">Continuar para (após qualquer escolha)</label>
+              <Select
+                value={block.next || 'none'}
+                onValueChange={val => {
+                  updateBlock(block.id, { next: val === 'none' ? undefined : val });
+                }}
+              >
+                <SelectTrigger className="bg-secondary border-border text-foreground">
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (parar)</SelectItem>
+                  {flow.blocks
+                    .filter(b => b.id !== block.id)
+                    .map((b) => {
+                      const blockIndex = flow.blocks.findIndex(fb => fb.id === b.id);
+                      return (
+                        <SelectItem key={b.id} value={b.id}>
+                          #{blockIndex + 1} {typeLabels[b.type].label}
+                          {b.content ? ` — ${b.content.substring(0, 30)}...` : ''}
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         );
       case 'input':

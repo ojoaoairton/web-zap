@@ -433,12 +433,43 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     else if (flow.pixelId) initPixel(flow.pixelId);
     captureUtmParams();
 
-    let currentId: string | undefined = startFromBlockId || flow.blocks[0].id;
+    let currentId: string | undefined = startFromBlockId || flow.blocks?.[0]?.id;
+
+    // Coleta todos os IDs dos blocos de destino dos botões no fluxo para identificar desvios
+    const buttonTargets = new Set(
+      (flow.blocks || [])
+        .flatMap(b => b.buttons || [])
+        .map(btn => btn.next)
+        .filter(Boolean)
+    );
+
+    // Rastreia se estamos dentro de uma branch de botão
+    // e qual é o ponto de convergência (block.next do bloco de botões)
+    let inButtonBranch = false;
+    let buttonsBlockNext: string | undefined = undefined;
 
     while (currentId && !abortRef.current) {
       const block = flow.blocks.find(b => b.id === currentId);
       if (!block) break;
-      currentId = await processBlock(block);
+
+      // Ao encontrar um bloco de botões, salva o ponto de convergência
+      if (block.type === 'buttons') {
+        inButtonBranch = true;
+        buttonsBlockNext = block.next;
+      }
+
+      const nextId: string | undefined = await processBlock(block);
+
+      // Se estamos dentro de uma branch de botão e a transição é implícita
+      // (bloco atual NÃO era 'buttons') e o próximo bloco é destino de outro botão,
+      // a branch terminou — usar o ponto de convergência para continuar o fluxo
+      if (inButtonBranch && block.type !== 'buttons' && nextId && buttonTargets.has(nextId)) {
+        currentId = buttonsBlockNext;
+        inButtonBranch = false;
+        buttonsBlockNext = undefined;
+      } else {
+        currentId = nextId;
+      }
     }
 
     if (flow.webhookUrl && flow.webhookEnabled !== false && !abortRef.current) {
@@ -523,7 +554,16 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     if (!buttonsBlockId) return;
     if (buttonsClickLockedRef.current) return;
     buttonsClickLockedRef.current = true;
-    console.log('Botão clicado:', btn.label, 'next:', btn.next);
+    
+    // Adicionar log temporário para debug
+    console.log('Botão clicado:', {
+      label: btn.label,
+      btnNext: btn.next,
+      parentNext: flow.blocks.find(b => b.id === buttonsBlockId)?.next
+    });
+
+    const parentBlockNext = flow.blocks.find(b => b.id === buttonsBlockId)?.next;
+
     setUserReplied(true);
     setButtonsBlockId(null);
     setButtonsMessageId(null);
@@ -564,10 +604,10 @@ const ChatPlayer: React.FC<ChatPlayerProps> = ({ isPreview, flow: flowProp }) =>
     if (btn.type !== 'link') {
       await new Promise<void>(r => setTimeout(r, 1500));
     }
-    const parentNext = flow.blocks.find(b => b.id === buttonsBlockId)?.next;
-    const next = btn.next || parentNext || '';
+    
+    const next = btn.type === 'link' ? (btn.next || '') : (btn.next || parentBlockNext || '');
     window.dispatchEvent(new CustomEvent('chat-button-click', { detail: { next } }));
-  }, [buttonsBlockId, addMessage, flow.blocks, scrollToBottom]);
+  }, [buttonsBlockId, addMessage, flow.blocks, flow.id, flow.name, isPreview, scrollToBottom]);
 
   const handleContinue = useCallback(() => {
     const saved = savedSessionRef.current;
